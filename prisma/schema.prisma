@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum MemberStatus {
+  PENDING
+  ACTIVE
+  BANNED
+}
+
+enum AccessType {
+  PURCHASE
+  SUBSCRIPTION
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique
+  name         String
+  avatarUrl    String?      @map("avatar_url")
+  role         Role         @default(STUDENT)
+  status       MemberStatus @default(ACTIVE)
+  xpTotal      Int          @default(0) @map("xp_total")
+  level        Int          @default(1)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  courseAccesses   CourseAccess[]
+  subscription     Subscription?
+  lessonProgresses LessonProgress[]
+  gamificationLogs GamificationLog[]
+  userBadges       UserBadge[]
+  comments         Comment[]
+  posts            Post[]
+  postReplies      PostReply[]
+  postLikes        PostLike[]
+  invitesSent      Invite[]         @relation("InviteSender")
+
+  @@map("users")
+}
+
+model Invite {
+  id          String    @id @default(uuid())
+  code        String    @unique @default(uuid())
+  email       String?
+  senderId    String    @map("sender_id")
+  usedAt      DateTime? @map("used_at")
+  usedByEmail String?   @map("used_by_email")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  sender User @relation("InviteSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("invites")
+}
+
+model Course {
+  id                 String  @id @default(uuid())
+  title              String
+  description        String
+  thumbnailUrl       String? @map("thumbnail_url")
+  price              Decimal @db.Decimal(10, 2)
+  isSubscriptionOnly Boolean @default(false) @map("is_subscription_only")
+  published          Boolean @default(false)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  modules       Module[]
+  courseAccesses CourseAccess[]
+
+  @@map("courses")
+}
+
+model Module {
+  id        String   @id @default(uuid())
+  courseId  String   @map("course_id")
+  title     String
+  order     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@map("modules")
+}
+
+model Lesson {
+  id          String   @id @default(uuid())
+  moduleId    String   @map("module_id")
+  title       String
+  youtubeUrl  String   @map("youtube_url")
+  description String?
+  order       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  module           Module              @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lessonProgresses LessonProgress[]
+  comments         Comment[]
+  attachments      LessonAttachment[]
+
+  @@map("lessons")
+}
+
+enum AttachmentType {
+  PDF
+  LINK
+  IMAGE
+  FILE
+}
+
+model LessonAttachment {
+  id        String         @id @default(uuid())
+  lessonId  String         @map("lesson_id")
+  name      String
+  type      AttachmentType
+  url       String
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("lesson_attachments")
+}
+
+model LessonProgress {
+  userId      String   @map("user_id")
+  lessonId    String   @map("lesson_id")
+  completedAt DateTime @default(now()) @map("completed_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@id([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+model CourseAccess {
+  id         String     @id @default(uuid())
+  userId     String     @map("user_id")
+  courseId   String     @map("course_id")
+  type       AccessType
+  expiresAt  DateTime?  @map("expires_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("course_accesses")
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String             @unique @map("user_id")
+  kiwifySubscriptionId String             @unique @map("kiwify_subscription_id")
+  status               SubscriptionStatus @default(ACTIVE)
+  expiresAt            DateTime?          @map("expires_at")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model GamificationLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  action    String
+  xpEarned  Int      @map("xp_earned")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("gamification_logs")
+}
+
+model Badge {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String
+  iconUrl     String? @map("icon_url")
+  condition   String
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  userId   String   @map("user_id")
+  badgeId  String   @map("badge_id")
+  earnedAt DateTime @default(now()) @map("earned_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  lessonId  String   @map("lesson_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+// ── Fórum ─────────────────────────────────────────────────────────────────────
+
+model Channel {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  posts Post[]
+
+  @@map("channels")
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  channelId String   @map("channel_id")
+  userId    String   @map("user_id")
+  title     String
+  content   String
+  videoUrl  String?  @map("video_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  channel     Channel         @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies     PostReply[]
+  attachments PostAttachment[]
+  likes       PostLike[]
+
+  @@map("posts")
+}
+
+model PostLike {
+  userId    String   @map("user_id")
+  postId    String   @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@map("post_likes")
+}
+
+model PostAttachment {
+  id        String         @id @default(uuid())
+  postId    String         @map("post_id")
+  name      String
+  type      AttachmentType
+  url       String
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_attachments")
+}
+
+model PostReply {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("post_replies")
+}

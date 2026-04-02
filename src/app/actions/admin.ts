@@ -1,0 +1,281 @@
+'use server'
+
+import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
+import { prisma } from '@/lib/prisma'
+import { verificarAdmin } from '@/lib/admin'
+
+// ── Cursos ───────────────────────────────────────────────────────────────────
+
+export async function criarCurso(formData: FormData) {
+  await verificarAdmin()
+
+  const curso = await prisma.course.create({
+    data: {
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      price: parseFloat(formData.get('price') as string) || 0,
+      isSubscriptionOnly: formData.get('isSubscriptionOnly') === 'true',
+      published: false,
+    },
+  })
+
+  redirect(`/admin/cursos/${curso.id}/modulos`)
+}
+
+export async function editarCurso(formData: FormData) {
+  await verificarAdmin()
+
+  const id = formData.get('id') as string
+  const thumbnail = formData.get('thumbnail') as File | null
+
+  let thumbnailUrl: string | undefined
+
+  if (thumbnail && thumbnail.size > 0) {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+
+    const ext = thumbnail.name.split('.').pop()
+    const caminho = `${id}/thumbnail.${ext}`
+
+    const { error } = await supabase.storage
+      .from('course-thumbnails')
+      .upload(caminho, thumbnail, { contentType: thumbnail.type, upsert: true })
+
+    if (!error) {
+      const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(caminho)
+      thumbnailUrl = `${data.publicUrl}?t=${Date.now()}`
+    }
+  }
+
+  await prisma.course.update({
+    where: { id },
+    data: {
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      price: parseFloat(formData.get('price') as string) || 0,
+      isSubscriptionOnly: formData.get('isSubscriptionOnly') === 'true',
+      published: formData.get('published') === 'true',
+      ...(thumbnailUrl ? { thumbnailUrl } : {}),
+    },
+  })
+
+  redirect(`/admin/cursos/${id}/modulos`)
+}
+
+export async function excluirCurso(formData: FormData) {
+  await verificarAdmin()
+  const id = formData.get('id') as string
+  await prisma.course.delete({ where: { id } })
+  redirect('/admin/cursos')
+}
+
+export async function alternarPublicacao(formData: FormData) {
+  await verificarAdmin()
+  const id = formData.get('id') as string
+  const published = formData.get('published') === 'true'
+  await prisma.course.update({ where: { id }, data: { published: !published } })
+  redirect('/admin/cursos')
+}
+
+// ── Módulos ──────────────────────────────────────────────────────────────────
+
+export async function criarModulo(formData: FormData) {
+  await verificarAdmin()
+
+  const courseId = formData.get('courseId') as string
+
+  const ultimo = await prisma.module.findFirst({
+    where: { courseId },
+    orderBy: { order: 'desc' },
+    select: { order: true },
+  })
+
+  await prisma.module.create({
+    data: {
+      courseId,
+      title: formData.get('title') as string,
+      order: (ultimo?.order ?? 0) + 1,
+    },
+  })
+
+  redirect(`/admin/cursos/${courseId}/modulos`)
+}
+
+export async function editarModulo(formData: FormData) {
+  await verificarAdmin()
+
+  const id = formData.get('id') as string
+  const courseId = formData.get('courseId') as string
+
+  await prisma.module.update({
+    where: { id },
+    data: { title: formData.get('title') as string },
+  })
+
+  redirect(`/admin/cursos/${courseId}/modulos`)
+}
+
+export async function excluirModulo(formData: FormData) {
+  await verificarAdmin()
+  const id = formData.get('id') as string
+  const courseId = formData.get('courseId') as string
+  await prisma.module.delete({ where: { id } })
+  redirect(`/admin/cursos/${courseId}/modulos`)
+}
+
+// ── Aulas ─────────────────────────────────────────────────────────────────────
+
+export async function criarAula(formData: FormData) {
+  await verificarAdmin()
+
+  const moduleId = formData.get('moduleId') as string
+  const courseId = formData.get('courseId') as string
+
+  const ultima = await prisma.lesson.findFirst({
+    where: { moduleId },
+    orderBy: { order: 'desc' },
+    select: { order: true },
+  })
+
+  await prisma.lesson.create({
+    data: {
+      moduleId,
+      title: formData.get('title') as string,
+      youtubeUrl: formData.get('youtubeUrl') as string,
+      description: (formData.get('description') as string) || null,
+      order: (ultima?.order ?? 0) + 1,
+    },
+  })
+
+  redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
+}
+
+export async function editarAula(formData: FormData) {
+  await verificarAdmin()
+
+  const id = formData.get('id') as string
+  const moduleId = formData.get('moduleId') as string
+  const courseId = formData.get('courseId') as string
+
+  await prisma.lesson.update({
+    where: { id },
+    data: {
+      title: formData.get('title') as string,
+      youtubeUrl: formData.get('youtubeUrl') as string,
+      description: (formData.get('description') as string) || null,
+    },
+  })
+
+  redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
+}
+
+export async function excluirAula(formData: FormData) {
+  await verificarAdmin()
+  const id = formData.get('id') as string
+  const moduleId = formData.get('moduleId') as string
+  const courseId = formData.get('courseId') as string
+  await prisma.lesson.delete({ where: { id } })
+  redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
+}
+
+// ── Anexos ────────────────────────────────────────────────────────────────────
+
+export async function adicionarLink(formData: FormData) {
+  await verificarAdmin()
+
+  const lessonId = formData.get('lessonId') as string
+  const moduleId = formData.get('moduleId') as string
+  const courseId = formData.get('courseId') as string
+
+  const anexo = await prisma.lessonAttachment.create({
+    data: {
+      lessonId,
+      name: formData.get('name') as string,
+      type: 'LINK',
+      url: formData.get('url') as string,
+    },
+  })
+
+  // Busca o cursoId real da aula para revalidar a view do aluno
+  const aula = await prisma.lesson.findUnique({ where: { id: lessonId }, select: { module: { select: { courseId: true } } } })
+  if (aula) revalidatePath(`/cursos/${aula.module.courseId}/aulas/${lessonId}`)
+
+  redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
+}
+
+export async function adicionarPdf(formData: FormData) {
+  await verificarAdmin()
+
+  const file = formData.get('file') as File
+  const lessonId = formData.get('lessonId') as string
+  const moduleId = formData.get('moduleId') as string
+  const courseId = formData.get('courseId') as string
+  const name = formData.get('name') as string
+
+  if (!file || file.size === 0) {
+    redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas?erro=arquivo-vazio`)
+  }
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+
+  const ext = file.name.split('.').pop()
+  const caminho = `${lessonId}/${Date.now()}.${ext}`
+
+  const { error } = await supabase.storage
+    .from('lesson-attachments')
+    .upload(caminho, file, { contentType: file.type })
+
+  if (error) {
+    redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas?erro=upload-falhou`)
+  }
+
+  const { data } = supabase.storage.from('lesson-attachments').getPublicUrl(caminho)
+
+  await prisma.lessonAttachment.create({
+    data: {
+      lessonId,
+      name,
+      type: 'PDF',
+      url: data.publicUrl,
+    },
+  })
+
+  redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
+}
+
+export async function excluirAnexo(formData: FormData) {
+  await verificarAdmin()
+  const id = formData.get('id') as string
+  const moduleId = formData.get('moduleId') as string
+  const courseId = formData.get('courseId') as string
+  await prisma.lessonAttachment.delete({ where: { id } })
+  redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
+}
+
+// ── Canais do Fórum ───────────────────────────────────────────────────────────
+
+export async function criarCanal(formData: FormData) {
+  await verificarAdmin()
+
+  const ultimo = await prisma.channel.findFirst({ orderBy: { order: 'desc' }, select: { order: true } })
+
+  await prisma.channel.create({
+    data: {
+      name: formData.get('name') as string,
+      description: (formData.get('description') as string) || null,
+      order: (ultimo?.order ?? 0) + 1,
+    },
+  })
+
+  revalidatePath('/comunidade')
+  redirect('/admin/comunidade')
+}
+
+export async function excluirCanal(formData: FormData) {
+  await verificarAdmin()
+  const id = formData.get('id') as string
+  await prisma.channel.delete({ where: { id } })
+  redirect('/admin/comunidade')
+}
