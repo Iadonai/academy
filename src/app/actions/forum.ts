@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
-import { AttachmentType } from '@/generated/prisma'
 import { concederXP } from '@/lib/xp'
 
 async function getUsuario() {
@@ -14,7 +13,7 @@ async function getUsuario() {
   return user
 }
 
-function tipoArquivo(mimeType: string): AttachmentType {
+function tipoArquivo(mimeType: string): 'IMAGE' | 'FILE' {
   if (mimeType.startsWith('image/')) return 'IMAGE'
   return 'FILE'
 }
