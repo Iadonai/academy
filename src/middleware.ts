@@ -23,12 +23,10 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh da sessao — nao remova esta linha
   const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
 
-  // Rotas protegidas — redireciona para login se nao autenticado
   const protectedRoutes = ['/dashboard', '/admin', '/comunidade', '/cursos', '/ranking', '/perfil']
   const isProtected = protectedRoutes.some(route => pathname.startsWith(route))
 
@@ -36,33 +34,6 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
-  }
-
-  if (isProtected && user) {
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role, status')
-      .eq('id', user.id)
-      .single()
-
-    // Bloqueado ou pendente — redireciona para página de espera
-    if (profile?.status === 'PENDING' && pathname !== '/aguardando') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/aguardando'
-      return NextResponse.redirect(url)
-    }
-    if (profile?.status === 'BANNED' && pathname !== '/bloqueado') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/bloqueado'
-      return NextResponse.redirect(url)
-    }
-
-    // Admin — redireciona se nao for admin
-    if (pathname.startsWith('/admin') && profile?.role !== 'ADMIN') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
-    }
   }
 
   return supabaseResponse
