@@ -38,7 +38,7 @@ export async function reativarMembro(formData: FormData) {
   revalidatePath('/admin/membros')
 }
 
-export async function gerarConvite(formData: FormData) {
+export async function gerarConvite(formData: FormData): Promise<void> {
   await verificarAdmin()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -51,7 +51,6 @@ export async function gerarConvite(formData: FormData) {
   })
 
   revalidatePath('/admin/membros')
-  return convite.code
 }
 
 export async function excluirConvite(formData: FormData) {
