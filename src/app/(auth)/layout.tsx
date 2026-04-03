@@ -49,13 +49,28 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           alt="Comunidade Iadonai"
           width={1024}
           height={302}
-          style={{ maxWidth: '100%', height: 'auto' }}
+          style={{ maxWidth: '100%', height: 'auto', opacity: 0.75 }}
           priority
         />
       </div>
 
       {/* Card do formulário */}
       <div style={{ width: '100%', maxWidth: '420px', padding: '0 16px 40px', position: 'relative' }}>
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <div style={{
+            fontFamily: 'var(--font-h, sans-serif)',
+            fontSize: '22px',
+            fontWeight: 900,
+            letterSpacing: '.14em',
+            background: 'linear-gradient(180deg, #ffffff 0%, #c0c8d8 40%, #8898aa 70%, #c8d4e0 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>
+            IADONAI ACADEMY
+          </div>
+        </div>
+
         <div style={{
           background: 'rgba(255,255,255,.04)',
           border: '1px solid rgba(255,255,255,.08)',
