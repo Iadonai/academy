@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { cadastro, loginComGoogle } from '@/app/actions/auth'
+import { cadastro } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { BotaoGoogle } from '@/components/auth/BotaoGoogle'
 
 export default function CadastroPage({
   searchParams,
@@ -49,11 +50,7 @@ export default function CadastroPage({
         <div className="h-px flex-1 bg-slate-200" />
       </div>
 
-      <form action={loginComGoogle}>
-        <Button type="submit" variant="outline" className="w-full">
-          Cadastrar com Google
-        </Button>
-      </form>
+      <BotaoGoogle texto="Cadastrar com Google" />
 
       <p className="mt-6 text-center text-sm text-slate-500">
         Já tem conta?{' '}

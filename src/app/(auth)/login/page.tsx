@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { login, loginComGoogle } from '@/app/actions/auth'
+import { login } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { BotaoGoogle } from '@/components/auth/BotaoGoogle'
 
 export default function LoginPage({
   searchParams,
@@ -41,11 +42,7 @@ export default function LoginPage({
         <div className="h-px flex-1 bg-slate-200" />
       </div>
 
-      <form action={loginComGoogle}>
-        <Button type="submit" variant="outline" className="w-full">
-          Entrar com Google
-        </Button>
-      </form>
+      <BotaoGoogle />
 
       <p className="mt-6 text-center text-sm text-slate-500">
         Ainda não tem conta?{' '}
