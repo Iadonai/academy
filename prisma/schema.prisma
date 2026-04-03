@@ -43,6 +43,7 @@ model User {
 
   courseAccesses   CourseAccess[]
   certificates     Certificate[]
+  notes            Note[]
   subscription     Subscription?
   lessonProgresses LessonProgress[]
   gamificationLogs GamificationLog[]
@@ -117,6 +118,7 @@ model Lesson {
   lessonProgresses LessonProgress[]
   comments         Comment[]
   attachments      LessonAttachment[]
+  notes            Note[]
 
   @@map("lessons")
 }
@@ -265,6 +267,23 @@ model Channel {
   posts Post[]
 
   @@map("channels")
+}
+
+// ── Notas pessoais ────────────────────────────────────────────────────────────
+
+model Note {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  lessonId  String   @map("lesson_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("notes")
 }
 
 // ── Certificados ──────────────────────────────────────────────────────────────

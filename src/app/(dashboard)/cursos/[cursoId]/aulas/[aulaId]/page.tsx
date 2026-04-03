@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { youtubeEmbedUrl } from '@/lib/youtube'
 import { BotaoConcluida } from '@/components/aula/BotaoConcluida'
 import { Comentarios } from '@/components/aula/Comentarios'
+import { NotasPessoais } from '@/components/aula/NotasPessoais'
 
 export default async function AulaPage({
   params,
@@ -32,7 +33,7 @@ export default async function AulaPage({
     if (!acesso && !assinatura) redirect('/dashboard')
   }
 
-  const [aula, progresses] = await Promise.all([
+  const [aula, progresses, nota] = await Promise.all([
     prisma.lesson.findUnique({
       where: { id: aulaId },
       include: {
@@ -62,6 +63,10 @@ export default async function AulaPage({
     prisma.lessonProgress.findMany({
       where: { userId: user.id },
       select: { lessonId: true },
+    }),
+    prisma.note.findUnique({
+      where: { userId_lessonId: { userId: user.id, lessonId: aulaId } },
+      select: { content: true },
     }),
   ])
 
@@ -139,6 +144,9 @@ export default async function AulaPage({
             {aula.description && (
               <p className="text-slate-600 text-sm mb-6 leading-relaxed">{aula.description}</p>
             )}
+
+            {/* Notas pessoais */}
+            <NotasPessoais lessonId={aulaId} conteudoInicial={nota?.content ?? ''} />
 
             {/* Materiais para download */}
             {aula.attachments.length > 0 && (
