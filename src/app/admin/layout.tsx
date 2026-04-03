@@ -27,6 +27,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             Comunidade
           </Link>
           <Link
+            href="/admin/lives"
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+          >
+            Lives
+          </Link>
+          <Link
             href="/admin/membros"
             className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
           >

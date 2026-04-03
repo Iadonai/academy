@@ -74,6 +74,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             Comunidade <span className="tab-pip" />
           </NavLink>
           <NavLink href="/dashboard">Classroom</NavLink>
+          <NavLink href="/lives">Lives</NavLink>
           <NavLink href="/ranking">Ranking</NavLink>
           {isAdmin && <NavLink href="/admin">Admin</NavLink>}
         </div>

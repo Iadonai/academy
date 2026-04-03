@@ -299,3 +299,28 @@ export async function excluirCanal(formData: FormData) {
   await prisma.channel.delete({ where: { id } })
   redirect('/admin/comunidade')
 }
+
+// ── Lives ─────────────────────────────────────────────────────────────────────
+
+export async function criarLive(formData: FormData) {
+  await verificarAdmin()
+
+  const title = formData.get('title') as string
+  const description = (formData.get('description') as string) || null
+  const youtubeUrl = formData.get('youtubeUrl') as string
+  const scheduledAt = new Date(formData.get('scheduledAt') as string)
+
+  await prisma.liveEvent.create({
+    data: { title, description, youtubeUrl, scheduledAt },
+  })
+
+  revalidatePath('/lives')
+  redirect('/admin/lives')
+}
+
+export async function excluirLive(formData: FormData) {
+  await verificarAdmin()
+  const id = formData.get('id') as string
+  await prisma.liveEvent.delete({ where: { id } })
+  redirect('/admin/lives')
+}
