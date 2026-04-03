@@ -36,6 +36,21 @@ export async function cadastro(formData: FormData) {
   }
 
   const supabase = await createClient()
+
+  // Verifica se já existe no banco (criado pelo webhook Kiwify)
+  const usuarioExistente = await prisma.user.findUnique({ where: { email } })
+
+  if (usuarioExistente) {
+    // Usuário já existe — só atualiza a senha no Supabase Auth
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const adminSupabase = await createAdminClient()
+    await adminSupabase.auth.admin.updateUserById(usuarioExistente.id, { password })
+
+    // Faz login direto
+    await supabase.auth.signInWithPassword({ email, password })
+    redirect('/dashboard')
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -47,7 +62,6 @@ export async function cadastro(formData: FormData) {
   }
 
   if (data.user) {
-    // Com convite válido → ACTIVE, sem convite → PENDING
     const status = convite ? 'ACTIVE' : 'PENDING'
 
     await prisma.user.create({
@@ -59,7 +73,6 @@ export async function cadastro(formData: FormData) {
       },
     })
 
-    // Marcar convite como usado
     if (convite) {
       await prisma.invite.update({
         where: { id: convite.id },

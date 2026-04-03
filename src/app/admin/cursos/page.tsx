@@ -43,10 +43,16 @@ export default async function CursosPage() {
                 <tr key={curso.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-medium text-slate-900">{curso.title}</td>
                   <td className="px-4 py-3 text-slate-500">{curso._count.modules}</td>
-                  <td className="px-4 py-3 text-slate-500">
-                    {curso.isSubscriptionOnly
-                      ? 'Assinatura'
-                      : `R$ ${Number(curso.price).toFixed(2)}`}
+                  <td className="px-4 py-3">
+                    {curso.isSubscriptionOnly ? (
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700">Assinatura</span>
+                    ) : Number(curso.price) === 0 ? (
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Grátis</span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700">
+                        R$ {Number(curso.price).toFixed(2).replace('.', ',')}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span
