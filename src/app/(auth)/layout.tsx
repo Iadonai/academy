@@ -17,14 +17,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(91,200,255,.04) 39px,rgba(91,200,255,.04) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(91,200,255,.04) 39px,rgba(91,200,255,.04) 40px)',
       }} />
 
-      {/* Logo — largura total */}
-      <div style={{ width: '100%', position: 'relative' }}>
+      {/* Logo */}
+      <div style={{ padding: '32px 16px 8px', textAlign: 'center' }}>
         <Image
           src="/logo-iadonai.png"
           alt="Comunidade Iadonai"
           width={1024}
           height={302}
-          style={{ width: '100%', height: 'auto', display: 'block' }}
+          style={{ maxWidth: '100%', height: 'auto' }}
           priority
         />
       </div>
