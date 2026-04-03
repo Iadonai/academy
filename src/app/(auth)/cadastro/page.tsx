@@ -11,50 +11,44 @@ export default function CadastroPage({
   searchParams: Promise<{ erro?: string; convite?: string }>
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-      <h2 className="mb-1 text-xl font-semibold text-slate-900">Criar conta</h2>
-      <p className="mb-6 text-sm text-slate-500">Comece a aprender hoje mesmo</p>
+    <div>
+      <h2 style={{ color: '#fff', fontWeight: 600, fontSize: '18px', marginBottom: '4px' }}>Criar conta</h2>
+      <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '13px', marginBottom: '20px' }}>Comece a aprender hoje mesmo</p>
 
       <ErroMensagem searchParams={searchParams} />
       <ConviteBanner searchParams={searchParams} />
 
-      <form action={cadastro} className="space-y-4">
+      <form action={cadastro} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <ConviteInput searchParams={searchParams} />
-        <div className="space-y-1.5">
-          <Label htmlFor="nome">Nome completo</Label>
-          <Input id="nome" name="nome" type="text" placeholder="Seu nome" required />
+        <div>
+          <Label htmlFor="nome" style={{ color: 'rgba(255,255,255,.7)', fontSize: '12px' }}>Nome completo</Label>
+          <Input id="nome" name="nome" type="text" placeholder="Seu nome" required
+            style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#fff', marginTop: '4px' }} />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="email">E-mail</Label>
-          <Input id="email" name="email" type="email" placeholder="seu@email.com" required />
+        <div>
+          <Label htmlFor="email" style={{ color: 'rgba(255,255,255,.7)', fontSize: '12px' }}>E-mail</Label>
+          <Input id="email" name="email" type="email" placeholder="seu@email.com" required
+            style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#fff', marginTop: '4px' }} />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="password">Senha</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Mínimo 6 caracteres"
-            minLength={6}
-            required
-          />
+        <div>
+          <Label htmlFor="password" style={{ color: 'rgba(255,255,255,.7)', fontSize: '12px' }}>Senha</Label>
+          <Input id="password" name="password" type="password" placeholder="Mínimo 6 caracteres" minLength={6} required
+            style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#fff', marginTop: '4px' }} />
         </div>
-        <Button type="submit" className="w-full">
-          Criar conta
-        </Button>
+        <Button type="submit" className="w-full">Criar conta</Button>
       </form>
 
-      <div className="my-4 flex items-center gap-3">
-        <div className="h-px flex-1 bg-slate-200" />
-        <span className="text-xs text-slate-400">ou</span>
-        <div className="h-px flex-1 bg-slate-200" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '16px 0' }}>
+        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,.1)' }} />
+        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,.3)' }}>ou</span>
+        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,.1)' }} />
       </div>
 
       <BotaoGoogle texto="Cadastrar com Google" />
 
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(255,255,255,.4)', marginTop: '20px' }}>
         Já tem conta?{' '}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link href="/login" style={{ color: 'rgba(91,200,255,.8)', fontWeight: 500 }}>
           Entrar
         </Link>
       </p>
@@ -66,7 +60,7 @@ async function ConviteBanner({ searchParams }: { searchParams: Promise<{ convite
   const { convite } = await searchParams
   if (!convite) return null
   return (
-    <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 flex items-center gap-2">
+    <div style={{ background: 'rgba(91,200,255,.1)', border: '1px solid rgba(91,200,255,.2)', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', color: 'rgba(91,200,255,.9)', marginBottom: '16px' }}>
       🎉 Você foi convidado! Seu acesso será liberado automaticamente ao criar a conta.
     </div>
   )
@@ -92,7 +86,7 @@ async function ErroMensagem({
   }
 
   return (
-    <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+    <div style={{ background: 'rgba(239,68,68,.15)', border: '1px solid rgba(255,255,255,.1)', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', color: '#fff', marginBottom: '16px' }}>
       {mensagens[erro] ?? 'Ocorreu um erro. Tente novamente.'}
     </div>
   )
