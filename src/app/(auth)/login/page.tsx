@@ -65,15 +65,18 @@ async function ErroMensagem({
   const { erro } = await searchParams
   if (!erro) return null
 
-  const mensagens: Record<string, string> = {
-    'credenciais-invalidas': 'E-mail ou senha incorretos.',
-    'google-indisponivel': 'Não foi possível entrar com Google. Tente novamente.',
-    'oauth-falhou': 'Falha ao autenticar. Tente novamente.',
+  const mensagens: Record<string, { texto: string; cor: string }> = {
+    'credenciais-invalidas': { texto: 'E-mail ou senha incorretos.', cor: 'bg-red-50 text-red-600' },
+    'google-indisponivel': { texto: 'Não foi possível entrar com Google. Tente novamente.', cor: 'bg-red-50 text-red-600' },
+    'oauth-falhou': { texto: 'Falha ao autenticar. Tente novamente.', cor: 'bg-red-50 text-red-600' },
+    'email-nao-confirmado': { texto: '📧 Confirme seu email antes de entrar. Verifique sua caixa de entrada.', cor: 'bg-yellow-50 text-yellow-700' },
   }
 
+  const msg = mensagens[erro ?? ''] ?? { texto: 'Ocorreu um erro. Tente novamente.', cor: 'bg-red-50 text-red-600' }
+
   return (
-    <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
-      {mensagens[erro] ?? 'Ocorreu um erro. Tente novamente.'}
+    <div className={`mb-4 rounded-md px-4 py-3 text-sm ${msg.cor}`}>
+      {msg.texto}
     </div>
   )
 }
