@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export const revalidate = 21600 // 6 horas
+export const revalidate = 604800 // 1 semana
 
 interface Vaga {
   id: string
@@ -15,16 +15,35 @@ interface Vaga {
   logo: string | null
 }
 
-const TERMOS_GUPY = ['automacao', 'dados', 'python', 'power bi', 'rpa', 'machine learning', 'data', 'analytics', 'n8n', 'bi', 'inteligencia artificial']
+const TERMOS_JSEARCH = [
+  'python brasil',
+  'dados brasil',
+  'automacao brasil',
+  'power bi brasil',
+  'machine learning brasil',
+  'inteligencia artificial brasil',
+  'n8n brasil',
+  'rpa brasil',
+  'analytics brasil',
+]
 
-async function buscarGupy(): Promise<Vaga[]> {
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY ?? ''
+
+async function buscarJSearch(): Promise<Vaga[]> {
   try {
     const resultados = await Promise.allSettled(
-      TERMOS_GUPY.map((termo) =>
-        fetch(`https://portal.api.gupy.io/api/v1/jobs?name=${encodeURIComponent(termo)}&limit=30`, {
-          headers: { 'accept': 'application/json' },
-          next: { revalidate: 21600 },
-        }).then((r) => r.json())
+      TERMOS_JSEARCH.map((termo) =>
+        fetch(
+          `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(termo)}&page=1&num_pages=1&country=br&date_posted=all`,
+          {
+            headers: {
+              'x-rapidapi-host': 'jsearch.p.rapidapi.com',
+              'x-rapidapi-key': RAPIDAPI_KEY,
+              'Content-Type': 'application/json',
+            },
+            next: { revalidate: 604800 },
+          }
+        ).then((r) => r.json())
       )
     )
 
@@ -33,25 +52,39 @@ async function buscarGupy(): Promise<Vaga[]> {
 
     for (const r of resultados) {
       if (r.status !== 'fulfilled') continue
-      const jobs = r.value?.data ?? r.value?.jobs ?? []
+      const jobs: Record<string, unknown>[] = r.value?.data ?? []
       for (const j of jobs) {
-        if (vistos.has(j.id)) continue
-        vistos.add(j.id)
+        const id = j.job_id as string
+        if (!id || vistos.has(id)) continue
+        vistos.add(id)
+
+        const cidade = j.job_city as string | null
+        const estado = j.job_state as string | null
+        const remoto = j.job_is_remote as boolean
+        const location = cidade
+          ? `${cidade}${estado ? `, ${estado}` : ''}`
+          : remoto
+          ? 'Remoto'
+          : 'Brasil'
+
+        const empType = (j.job_employment_type as string | null)?.toLowerCase() ?? ''
+        const type = remoto ? 'remote' : empType
+
         vagas.push({
-          id: `gupy-${j.id}`,
-          title: j.name ?? j.title ?? '',
-          company: j.company?.name ?? j.companyName ?? '',
-          location: j.city ? `${j.city}${j.state ? `, ${j.state}` : ''}` : (j.workplaceType === 'remote' ? 'Remoto' : 'Brasil'),
-          url: j.jobUrl ?? j.url ?? `https://portal.gupy.io/job/${j.id}`,
-          date: j.publishedDate ?? j.createdAt ?? '',
-          type: j.workplaceType ?? '',
-          source: 'Gupy',
-          logo: j.company?.logo ?? null,
+          id: `js-${id}`,
+          title: (j.job_title as string) ?? '',
+          company: (j.employer_name as string) ?? '',
+          location,
+          url: (j.job_apply_link as string) ?? (j.job_google_link as string) ?? '',
+          date: (j.job_posted_at_datetime_utc as string) ?? '',
+          type,
+          source: 'JSearch',
+          logo: (j.employer_logo as string | null) ?? null,
         })
       }
     }
 
-    return vagas.slice(0, 40)
+    return vagas.slice(0, 60)
   } catch {
     return []
   }
@@ -59,7 +92,7 @@ async function buscarGupy(): Promise<Vaga[]> {
 
 async function buscarProgramathor(): Promise<Vaga[]> {
   try {
-    const res = await fetch('https://programathor.com.br/feed', { next: { revalidate: 21600 } })
+    const res = await fetch('https://programathor.com.br/feed', { next: { revalidate: 604800 } })
     if (!res.ok) return []
     const xml = await res.text()
     const items = xml.match(/<item>([\s\S]*?)<\/item>/g) ?? []
@@ -97,10 +130,14 @@ const TIPO_LABEL: Record<string, string> = {
   hybrid: 'HÍBRIDO',
   on_site: 'PRESENCIAL',
   presential: 'PRESENCIAL',
+  fulltime: 'CLT',
+  contractor: 'PJ',
+  parttime: 'PART-TIME',
+  intern: 'ESTÁGIO',
 }
 
 const SOURCE_COR: Record<string, string> = {
-  Gupy: 'var(--cy)',
+  JSearch: 'var(--cy)',
   Programathor: '#22c55e',
 }
 
@@ -109,9 +146,9 @@ export default async function VagasPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [gupy, programathor] = await Promise.all([buscarGupy(), buscarProgramathor()])
+  const [jsearch, programathor] = await Promise.all([buscarJSearch(), buscarProgramathor()])
 
-  const vagas = [...gupy, ...programathor]
+  const vagas = [...jsearch, ...programathor]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   return (
@@ -120,7 +157,7 @@ export default async function VagasPage() {
         <div>
           <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--cy)', background: 'rgba(91,200,255,.08)', border: '1px solid rgba(91,200,255,.25)', padding: '3px 8px', letterSpacing: '.1em', marginBottom: '8px', display: 'inline-block' }}>// MERCADO BR</div>
           <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '18px', fontWeight: 900, letterSpacing: '.06em' }}>VAGAS DE TECH NO BRASIL</div>
-          <div style={{ fontSize: '13px', color: 'var(--mt)', marginTop: '4px' }}>Gupy · Programathor · Automação · Dados · IA · Python · Power BI</div>
+          <div style={{ fontSize: '13px', color: 'var(--mt)', marginTop: '4px' }}>JSearch · Programathor · Automação · Dados · IA · Python · Power BI</div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '28px' }}>{vagas.length}</div>
