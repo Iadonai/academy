@@ -74,7 +74,7 @@ export default async function NoticiasPage() {
             NOTÍCIAS DE TECNOLOGIA
           </div>
           <div style={{ fontSize: '13px', color: 'var(--mt)' }} suppressHydrationWarning>
-            Atualizado em {agora.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+            Atualizado em {agora.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })}
           </div>
         </div>
         <div className="hero-hex" style={{ fontSize: '12px' }}>NEWS</div>
@@ -137,7 +137,7 @@ export default async function NoticiasPage() {
 
                     {/* Data */}
                     <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', marginTop: 'auto', letterSpacing: '.04em' }} suppressHydrationWarning>
-                      {new Date(artigo.publishedAt).toLocaleDateString('pt-BR')}
+                      {new Date(artigo.publishedAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                     </div>
                   </div>
                 </div>
