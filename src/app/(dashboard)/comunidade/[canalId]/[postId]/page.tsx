@@ -2,8 +2,9 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { excluirPost, excluirResposta, responderPost } from '@/app/actions/forum'
+import { responderPost } from '@/app/actions/forum'
 import { BotaoCurtir } from '@/components/forum/BotaoCurtir'
+import { BotaoDeletarPost, BotaoDeletarResposta } from '@/components/forum/BotaoDeletarPost'
 import { youtubeEmbedUrl } from '@/lib/youtube'
 
 export default async function PostPage({
@@ -79,13 +80,7 @@ export default async function PostPage({
               </div>
             </div>
             {(isAdmin || isAutorPost) && (
-              <form action={excluirPost}>
-                <input type="hidden" name="id" value={post.id} />
-                <input type="hidden" name="channelId" value={canalId} />
-                <button type="submit" className="btn-danger" onClick={(e) => {
-                  if (!confirm('Excluir esta publicação e todas as respostas?')) e.preventDefault()
-                }}>EXCLUIR</button>
-              </form>
+              <BotaoDeletarPost postId={post.id} channelId={canalId} />
             )}
           </div>
 
@@ -169,14 +164,7 @@ export default async function PostPage({
                   </span>
                 </div>
                 {(isAdmin || isAutorResposta) && (
-                  <form action={excluirResposta}>
-                    <input type="hidden" name="id" value={reply.id} />
-                    <input type="hidden" name="postId" value={postId} />
-                    <input type="hidden" name="channelId" value={canalId} />
-                    <button type="submit" style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mg)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '.04em' }}>
-                      EXCLUIR
-                    </button>
-                  </form>
+                  <BotaoDeletarResposta replyId={reply.id} postId={postId} channelId={canalId} />
                 )}
               </div>
               <p style={{ fontSize: '13px', color: 'var(--tx)', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{reply.content}</p>
