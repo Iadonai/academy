@@ -81,6 +81,11 @@ export async function cadastro(formData: FormData) {
     })
   }
 
+  // Se confirmação de email está ativa, redireciona para página de aviso
+  if (!data.session) {
+    redirect('/confirmar-email')
+  }
+
   redirect('/dashboard')
 }
 
