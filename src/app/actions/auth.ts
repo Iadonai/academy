@@ -61,24 +61,24 @@ export async function cadastro(formData: FormData) {
     redirect('/cadastro?erro=email-ja-cadastrado')
   }
 
-  if (data.user) {
-    const status = convite ? 'ACTIVE' : 'PENDING'
+  // Supabase retorna identities=[] quando email já existe no Auth mas confirmação está ativa
+  if (!data.user || (data.user.identities && data.user.identities.length === 0)) {
+    redirect('/cadastro?erro=email-ja-cadastrado')
+  }
 
-    await prisma.user.create({
-      data: {
-        id: data.user.id,
-        email,
-        name: nome,
-        status,
-      },
+  const status = convite ? 'ACTIVE' : 'PENDING'
+
+  await prisma.user.upsert({
+    where: { id: data.user.id },
+    create: { id: data.user.id, email, name: nome, status },
+    update: { name: nome },
+  })
+
+  if (convite) {
+    await prisma.invite.update({
+      where: { id: convite.id },
+      data: { usedAt: new Date(), usedByEmail: email },
     })
-
-    if (convite) {
-      await prisma.invite.update({
-        where: { id: convite.id },
-        data: { usedAt: new Date(), usedByEmail: email },
-      })
-    }
   }
 
   redirect('/dashboard')
