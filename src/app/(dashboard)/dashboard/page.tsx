@@ -3,6 +3,17 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
+async function buscarFrase(): Promise<{ texto: string; autor: string } | null> {
+  try {
+    const res = await fetch('https://zenquotes.io/api/random', { next: { revalidate: 86400 } })
+    if (!res.ok) return null
+    const data = await res.json()
+    return { texto: data[0]?.q ?? '', autor: data[0]?.a ?? '' }
+  } catch {
+    return null
+  }
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -56,6 +67,8 @@ export default async function DashboardPage() {
     })
   )
 
+  const [frase] = await Promise.all([buscarFrase()])
+
   const primeiroNome = perfil?.name?.split(' ')[0] ?? 'ALUNO'
   const concluidos = cursosComProgresso.filter((c) => c.progresso === 100).length
 
@@ -94,6 +107,15 @@ export default async function DashboardPage() {
         </div>
         <div className="hero-hex">IA</div>
       </div>
+
+      {/* Frase do dia */}
+      {frase && (
+        <div style={{ margin: '16px 0', padding: '14px 18px', background: 'var(--s2)', border: '1px solid var(--bdr)', borderLeft: '3px solid var(--cy)' }}>
+          <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.1em', marginBottom: '6px' }}>// FRASE DO DIA</div>
+          <div style={{ fontSize: '13px', color: 'var(--tx)', lineHeight: 1.6, fontStyle: 'italic' }}>"{frase.texto}"</div>
+          <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', marginTop: '6px', letterSpacing: '.04em' }}>— {frase.autor}</div>
+        </div>
+      )}
 
       {/* Grid de cursos */}
       <div className="section-title" style={{ fontFamily: 'var(--font-h)', fontSize: '11px', letterSpacing: '.12em', marginBottom: '14px' }}>
