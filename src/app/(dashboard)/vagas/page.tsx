@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300 // 5 minutos
 
 interface Vaga {
   id: string
@@ -23,7 +23,7 @@ async function buscarGupy(): Promise<Vaga[]> {
       TERMOS_GUPY.map((termo) =>
         fetch(`https://portal.api.gupy.io/api/v1/jobs?name=${encodeURIComponent(termo)}&limit=30`, {
           headers: { 'accept': 'application/json' },
-          cache: 'no-store',
+          next: { revalidate: 300 },
         }).then((r) => r.json())
       )
     )
@@ -59,7 +59,7 @@ async function buscarGupy(): Promise<Vaga[]> {
 
 async function buscarProgramathor(): Promise<Vaga[]> {
   try {
-    const res = await fetch('https://programathor.com.br/feed', { cache: 'no-store' })
+    const res = await fetch('https://programathor.com.br/feed', { next: { revalidate: 300 } })
     if (!res.ok) return []
     const xml = await res.text()
     const items = xml.match(/<item>([\s\S]*?)<\/item>/g) ?? []

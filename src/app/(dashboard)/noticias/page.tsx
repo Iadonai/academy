@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300 // 5 minutos
 
 interface Artigo {
   title: string
@@ -19,7 +19,7 @@ async function buscarRSS(url: string, fonte: string): Promise<Artigo[]> {
     const xml = await res.text()
     const items = xml.match(/<item>([\s\S]*?)<\/item>/g) ?? []
 
-    return items.slice(0, 8).map((item, i) => {
+    return items.slice(0, 8).map((item) => {
       const get = (tag: string) => {
         const m = item.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${tag}>`, 'i'))
         return m ? m[1].trim().replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#\d+;/g, '') : ''
