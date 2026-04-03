@@ -91,57 +91,66 @@ export default async function NoticiasPage() {
           {artigos
             .filter((a) => a.title && a.title !== '[Removed]')
             .map((artigo, i) => (
-              <a
-                key={i}
-                href={artigo.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: 'none' }}
-              >
-                <div className="punk-card" style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', transition: 'border-color .2s' }}>
-                  <div style={{ borderTop: '2px solid var(--cy)' }} />
+              <div key={i} className="punk-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ borderTop: '2px solid var(--cy)' }} />
 
-                  {/* Imagem */}
-                  {artigo.urlToImage ? (
-                    <div style={{ height: '160px', overflow: 'hidden', background: 'var(--s3)' }}>
-                      <img
-                        src={artigo.urlToImage}
-                        alt={artigo.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                      />
-                    </div>
-                  ) : (
-                    <div style={{ height: '80px', background: 'var(--s3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontFamily: 'var(--font-h)', fontSize: '28px', color: 'var(--cy)', opacity: .2 }}>⚡</span>
-                    </div>
-                  )}
+                {/* Imagem */}
+                {artigo.urlToImage ? (
+                  <div style={{ height: '160px', overflow: 'hidden', background: 'var(--s3)' }}>
+                    <img
+                      src={artigo.urlToImage}
+                      alt={artigo.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ height: '80px', background: 'var(--s3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '28px', color: 'var(--cy)', opacity: .2 }}>⚡</span>
+                  </div>
+                )}
 
-                  <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {/* Fonte */}
+                <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* Fonte + data */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
                       // {artigo.source.name}
                     </div>
-
-                    {/* Título */}
-                    <div className="post-title" style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {artigo.title}
-                    </div>
-
-                    {/* Descrição */}
-                    {artigo.description && (
-                      <div style={{ fontSize: '12px', color: 'var(--mt)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1 }}>
-                        {artigo.description}
-                      </div>
-                    )}
-
-                    {/* Data */}
-                    <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', marginTop: 'auto', letterSpacing: '.04em' }} suppressHydrationWarning>
+                    <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', letterSpacing: '.04em' }} suppressHydrationWarning>
                       {new Date(artigo.publishedAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                     </div>
                   </div>
+
+                  {/* Título */}
+                  <div className="post-title" style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', lineHeight: 1.35 }}>
+                    {artigo.title}
+                  </div>
+
+                  {/* Resumo */}
+                  {artigo.description && (
+                    <div style={{ fontSize: '12px', color: 'var(--mt)', lineHeight: 1.6, flex: 1 }}>
+                      {artigo.description}
+                    </div>
+                  )}
+
+                  {/* Botão */}
+                  <a
+                    href={artigo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      marginTop: '4px', padding: '6px 14px',
+                      fontFamily: 'var(--font-m)', fontSize: '10px', letterSpacing: '.1em',
+                      color: 'var(--cy)', border: '1px solid rgba(91,200,255,.3)',
+                      background: 'rgba(91,200,255,.06)', textDecoration: 'none',
+                      alignSelf: 'flex-start',
+                    }}
+                  >
+                    LER MATÉRIA →
+                  </a>
                 </div>
-              </a>
+              </div>
             ))}
         </div>
       )}
