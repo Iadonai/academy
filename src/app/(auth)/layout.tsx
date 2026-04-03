@@ -5,10 +5,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div style={{
       minHeight: '100vh',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
       background: '#080c10',
-      padding: '24px 16px',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -18,28 +17,28 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(91,200,255,.04) 39px,rgba(91,200,255,.04) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(91,200,255,.04) 39px,rgba(91,200,255,.04) 40px)',
       }} />
 
-      {/* Brilho central */}
+      {/* Logo — largura total */}
+      <div style={{ width: '100%', position: 'relative' }}>
+        <Image
+          src="/logo-iadonai.png"
+          alt="Comunidade Iadonai"
+          width={2000}
+          height={590}
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+          priority
+        />
+      </div>
+
+      {/* Brilho */}
       <div style={{
-        position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
+        position: 'absolute', top: '30%', left: '50%', transform: 'translateX(-50%)',
         width: '700px', height: '300px',
         background: 'radial-gradient(ellipse at center, rgba(91,200,255,.06) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
-      <div style={{ width: '100%', maxWidth: '420px', position: 'relative' }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <Image
-            src="/logo-iadonai.png"
-            alt="Comunidade Iadonai"
-            width={2000}
-            height={590}
-            style={{ width: '100%', height: 'auto' }}
-            priority
-          />
-        </div>
-
-        {/* Card do formulário */}
+      {/* Card do formulário */}
+      <div style={{ width: '100%', maxWidth: '420px', padding: '0 16px 40px', position: 'relative' }}>
         <div style={{
           background: 'rgba(255,255,255,.04)',
           border: '1px solid rgba(255,255,255,.08)',
