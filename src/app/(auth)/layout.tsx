@@ -49,7 +49,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           alt="Comunidade Iadonai"
           width={1024}
           height={302}
-          style={{ maxWidth: '100%', height: 'auto', opacity: 0.75 }}
+          style={{ maxWidth: '100%', height: 'auto', opacity: 0.55 }}
           priority
         />
       </div>
