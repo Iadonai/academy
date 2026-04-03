@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export const revalidate = 300 // 5 minutos
+export const revalidate = 21600 // 6 horas
 
 interface Artigo {
   title: string
