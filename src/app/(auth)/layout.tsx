@@ -5,15 +5,24 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div style={{ minHeight: '100vh', display: 'flex' }}>
 
       {/* Lado esquerdo — imagem */}
-      <div style={{ flex: 1, position: 'relative', display: 'none' }} className="auth-left">
+      <div style={{
+        flex: 1,
+        display: 'none',
+        background: '#06040e',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }} className="auth-left">
         <Image
           src="/bg-login.jpg"
           alt=""
-          fill
-          style={{ objectFit: 'cover', objectPosition: 'center' }}
+          width={1920}
+          height={1080}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
           priority
         />
-        {/* Gradiente sobre a imagem para fundir com o lado direito */}
+        {/* Gradiente para fundir com o lado direito */}
         <div style={{
           position: 'absolute', inset: 0,
           background: 'linear-gradient(to right, rgba(6,4,14,0) 60%, rgba(6,4,14,1) 100%)',
