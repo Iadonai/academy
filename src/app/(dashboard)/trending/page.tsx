@@ -17,11 +17,11 @@ interface Repo {
 }
 
 const CATEGORIAS = [
-  { label: 'Python', query: 'topic:python+stars:>1000', cor: '#3b82f6' },
-  { label: 'Automação / RPA', query: 'topic:automation+stars:>500', cor: 'var(--cy)' },
-  { label: 'IA & Machine Learning', query: 'topic:machine-learning+stars:>2000', cor: '#a855f7' },
-  { label: 'Dados & Analytics', query: 'topic:data-science+stars:>1000', cor: '#22c55e' },
-  { label: 'N8N & Workflow', query: 'n8n+OR+workflow+automation+stars:>200', cor: '#f59e0b' },
+  { label: 'Python', query: 'language:python stars:>500', cor: '#3b82f6' },
+  { label: 'Automação / RPA', query: 'automation rpa stars:>100', cor: 'var(--cy)' },
+  { label: 'IA & Machine Learning', query: 'language:python machine learning stars:>1000', cor: '#a855f7' },
+  { label: 'Dados & Analytics', query: 'data science analytics stars:>500', cor: '#22c55e' },
+  { label: 'N8N & Workflow', query: 'n8n workflow stars:>50', cor: '#f59e0b' },
 ]
 
 async function buscarRepos(query: string): Promise<Repo[]> {
@@ -29,7 +29,10 @@ async function buscarRepos(query: string): Promise<Repo[]> {
     const res = await fetch(
       `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=6`,
       {
-        headers: { Accept: 'application/vnd.github+json' },
+        headers: {
+          Accept: 'application/vnd.github+json',
+          'User-Agent': 'iadonai-academy',
+        },
         next: { revalidate: 86400 },
       }
     )
