@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
+    console.log('[kiwify] body completo:', JSON.stringify(body, null, 2))
     const evento = body.webhook_event_type as string
 
     // Email e nome do comprador
