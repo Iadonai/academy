@@ -14,14 +14,34 @@ export async function GET(request: Request) {
       // Cria o usuario no banco se ainda nao existir
       const exists = await prisma.user.findUnique({ where: { id: data.user.id } })
       if (!exists) {
+        // Verifica se veio de convite (cookie ou searchParam)
+        const codigoConvite = searchParams.get('convite') ?? null
+        let status: 'ACTIVE' | 'PENDING' = 'PENDING'
+
+        if (codigoConvite) {
+          const convite = await prisma.invite.findUnique({ where: { code: codigoConvite } })
+          if (convite && !convite.usedAt) {
+            status = 'ACTIVE'
+            await prisma.invite.update({
+              where: { id: convite.id },
+              data: { usedAt: new Date(), usedByEmail: data.user.email },
+            })
+          }
+        }
+
         await prisma.user.create({
           data: {
             id: data.user.id,
             email: data.user.email!,
             name: data.user.user_metadata?.full_name ?? data.user.email!,
             avatarUrl: data.user.user_metadata?.avatar_url ?? null,
+            status,
           },
         })
+
+        if (status === 'PENDING') {
+          return NextResponse.redirect(`${origin}/aguardando`)
+        }
       }
 
       return NextResponse.redirect(`${origin}/dashboard`)
