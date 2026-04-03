@@ -37,15 +37,21 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
 
   if (!curso) notFound()
 
-  // Admin pode visualizar qualquer curso
-  if (perfil?.role !== 'ADMIN') {
-    const acesso = await prisma.courseAccess.findFirst({
-      where: { userId: user.id, courseId: cursoId },
-    })
-    const assinatura = await prisma.subscription.findFirst({
-      where: { userId: user.id, status: 'ACTIVE' },
-    })
-    if (!acesso && !assinatura) redirect('/dashboard')
+  // Verificar acesso
+  let temAcesso = perfil?.role === 'ADMIN'
+  if (!temAcesso) {
+    // Curso gratuito (preço = 0)
+    if (Number(curso.price) === 0) {
+      temAcesso = true
+    } else {
+      const acesso = await prisma.courseAccess.findFirst({
+        where: { userId: user.id, courseId: cursoId },
+      })
+      const assinatura = await prisma.subscription.findFirst({
+        where: { userId: user.id, status: 'ACTIVE' },
+      })
+      temAcesso = !!(acesso || assinatura)
+    }
   }
 
   const totalAulas = curso.modules.reduce((acc, m) => acc + m.lessons.length, 0)
@@ -94,7 +100,37 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
         )}
       </div>
 
-      <div className="space-y-4">
+      {/* Sem acesso — mostra botão de compra */}
+      {!temAcesso && (
+        <div style={{
+          background: 'var(--s2)', border: '1px solid var(--bdr)', borderTop: '2px solid var(--cy)',
+          padding: '24px', marginBottom: '24px', textAlign: 'center',
+        }}>
+          <div style={{ fontFamily: 'var(--font-h)', fontSize: '13px', color: 'var(--cy)', letterSpacing: '.08em', marginBottom: '8px' }}>
+            // ACESSO NECESSÁRIO
+          </div>
+          <div style={{ fontFamily: 'var(--font-m)', fontSize: '13px', color: 'var(--mt)', marginBottom: '16px' }}>
+            Adquira este curso para assistir às aulas.
+          </div>
+          {curso.kiwifyCheckoutUrl ? (
+            <a
+              href={curso.kiwifyCheckoutUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-punk"
+              style={{ display: 'inline-block', textDecoration: 'none' }}
+            >
+              COMPRAR — R$ {Number(curso.price).toFixed(2).replace('.', ',')}
+            </a>
+          ) : (
+            <div style={{ fontFamily: 'var(--font-m)', fontSize: '12px', color: 'var(--mt)' }}>
+              Entre em contato com o administrador para obter acesso.
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-4" style={{ opacity: temAcesso ? 1 : 0.4, pointerEvents: temAcesso ? 'auto' : 'none' }}>
         {curso.modules.map((modulo) => (
           <div key={modulo.id} className="rounded-xl border border-slate-200 bg-white overflow-hidden">
             <div className="px-5 py-4 bg-slate-50 border-b border-slate-200">

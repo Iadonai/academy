@@ -79,6 +79,7 @@ model Course {
   published          Boolean @default(false)
   kiwifyProductId    String? @map("kiwify_product_id")
   kiwifyPlanId       String? @map("kiwify_plan_id")
+  kiwifyCheckoutUrl  String? @map("kiwify_checkout_url")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 

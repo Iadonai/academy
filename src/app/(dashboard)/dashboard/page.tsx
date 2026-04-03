@@ -15,39 +15,27 @@ export default async function DashboardPage() {
 
   const isAdmin = perfil?.role === 'ADMIN'
 
-  let cursos: { id: string; title: string; description: string; thumbnailUrl: string | null; _count: { modules: number } }[] = []
+  // Busca todos os cursos publicados
+  const todosCursos = await prisma.course.findMany({
+    where: { published: true },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, title: true, description: true, thumbnailUrl: true, price: true, kiwifyCheckoutUrl: true, _count: { select: { modules: true } } },
+  })
 
-  if (isAdmin) {
-    cursos = await prisma.course.findMany({
-      where: { published: true },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true, title: true, description: true, thumbnailUrl: true, _count: { select: { modules: true } } },
-    })
-  } else {
-    const assinatura = await prisma.subscription.findFirst({
-      where: { userId: user.id, status: 'ACTIVE' },
-    })
-    if (assinatura) {
-      cursos = await prisma.course.findMany({
-        where: { published: true },
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, title: true, description: true, thumbnailUrl: true, _count: { select: { modules: true } } },
-      })
-    } else {
-      const acessos = await prisma.courseAccess.findMany({
-        where: { userId: user.id },
-        select: { courseId: true },
-      })
-      const ids = acessos.map((a) => a.courseId)
-      if (ids.length > 0) {
-        cursos = await prisma.course.findMany({
-          where: { id: { in: ids }, published: true },
-          orderBy: { createdAt: 'desc' },
-          select: { id: true, title: true, description: true, thumbnailUrl: true, _count: { select: { modules: true } } },
-        })
-      }
-    }
-  }
+  // IDs com acesso direto
+  const assinatura = await prisma.subscription.findFirst({
+    where: { userId: user.id, status: 'ACTIVE' },
+  })
+  const acessos = await prisma.courseAccess.findMany({
+    where: { userId: user.id },
+    select: { courseId: true },
+  })
+  const idsComAcesso = new Set(acessos.map((a) => a.courseId))
+
+  const cursos = todosCursos.map((c) => ({
+    ...c,
+    temAcesso: isAdmin || !!assinatura || Number(c.price) === 0 || idsComAcesso.has(c.id),
+  }))
 
   const progresses = await prisma.lessonProgress.findMany({
     where: { userId: user.id },
@@ -124,7 +112,7 @@ export default async function DashboardPage() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' }}>
           {cursosComProgresso.map((curso) => (
-            <Link key={curso.id} href={`/cursos/${curso.id}`} className="course-card">
+            <Link key={curso.id} href={`/cursos/${curso.id}`} className="course-card" style={{ opacity: curso.temAcesso ? 1 : 0.85 }}>
               {/* Thumb */}
               <div style={{ height: '110px', background: 'var(--s3)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
                 {curso.thumbnailUrl ? (
@@ -147,6 +135,22 @@ export default async function DashboardPage() {
                     color: 'var(--cy)', fontFamily: 'var(--font-m)', fontSize: '9px',
                     padding: '2px 7px', letterSpacing: '.08em',
                   }}>CONCLUÍDO</div>
+                )}
+                {!curso.temAcesso && Number(curso.price) > 0 && (
+                  <div style={{
+                    position: 'absolute', top: '8px', left: '8px',
+                    background: 'rgba(201,162,39,.15)', border: '1px solid rgba(201,162,39,.4)',
+                    color: 'var(--mg)', fontFamily: 'var(--font-m)', fontSize: '9px',
+                    padding: '2px 7px', letterSpacing: '.08em',
+                  }}>R$ {Number(curso.price).toFixed(2).replace('.', ',')}</div>
+                )}
+                {Number(curso.price) === 0 && (
+                  <div style={{
+                    position: 'absolute', top: '8px', left: '8px',
+                    background: 'rgba(34,197,94,.15)', border: '1px solid rgba(34,197,94,.4)',
+                    color: '#22c55e', fontFamily: 'var(--font-m)', fontSize: '9px',
+                    padding: '2px 7px', letterSpacing: '.08em',
+                  }}>GRÁTIS</div>
                 )}
               </div>
               {/* Accent bar */}

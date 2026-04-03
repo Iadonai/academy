@@ -111,7 +111,18 @@ export default async function EditarCursoPage({ params }: { params: Promise<{ id
               defaultValue={curso.kiwifyProductId ?? ''}
               placeholder="Ex: prod_abc123"
             />
-            <p className="text-xs text-slate-400">Kiwify → seu produto → copie o ID. Usado para liberar acesso automaticamente após pagamento.</p>
+            <p className="text-xs text-slate-400">Kiwify → seu produto → copie o ID. Usado para liberar acesso após pagamento.</p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="kiwifyCheckoutUrl">URL de Checkout da Kiwify</Label>
+            <Input
+              id="kiwifyCheckoutUrl"
+              name="kiwifyCheckoutUrl"
+              defaultValue={curso.kiwifyCheckoutUrl ?? ''}
+              placeholder="Ex: https://pay.kiwify.com.br/abc123"
+            />
+            <p className="text-xs text-slate-400">Kiwify → seu produto → link de pagamento. Aparece como botão "Comprar" para quem não tem acesso.</p>
           </div>
 
           <Button type="submit" className="w-full">Salvar alterações</Button>
