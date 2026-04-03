@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { BotaoCertificado } from './BotaoCertificado'
 
 export default async function CursoPage({ params }: { params: Promise<{ cursoId: string }> }) {
   const { cursoId } = await params
@@ -96,6 +97,9 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
                 style={{ width: `${progresso}%` }}
               />
             </div>
+            {progresso === 100 && temAcesso && (
+              <BotaoCertificado cursoId={cursoId} />
+            )}
           </div>
         )}
       </div>

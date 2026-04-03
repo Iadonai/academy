@@ -42,6 +42,7 @@ model User {
   updatedAt    DateTime     @updatedAt @map("updated_at")
 
   courseAccesses   CourseAccess[]
+  certificates     Certificate[]
   subscription     Subscription?
   lessonProgresses LessonProgress[]
   gamificationLogs GamificationLog[]
@@ -85,6 +86,7 @@ model Course {
 
   modules       Module[]
   courseAccesses CourseAccess[]
+  certificates   Certificate[]
 
   @@map("courses")
 }
@@ -263,6 +265,21 @@ model Channel {
   posts Post[]
 
   @@map("channels")
+}
+
+// ── Certificados ──────────────────────────────────────────────────────────────
+
+model Certificate {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  courseId  String   @map("course_id")
+  issuedAt  DateTime @default(now()) @map("issued_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("certificates")
 }
 
 model Post {
