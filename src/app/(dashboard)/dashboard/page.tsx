@@ -138,11 +138,12 @@ export default async function DashboardPage() {
                 )}
                 {!curso.temAcesso && Number(curso.price) > 0 && (
                   <div style={{
-                    position: 'absolute', top: '8px', left: '8px',
-                    background: 'rgba(201,162,39,.15)', border: '1px solid rgba(201,162,39,.4)',
-                    color: 'var(--mg)', fontFamily: 'var(--font-m)', fontSize: '9px',
-                    padding: '2px 7px', letterSpacing: '.08em',
-                  }}>R$ {Number(curso.price).toFixed(2).replace('.', ',')}</div>
+                    position: 'absolute', inset: 0,
+                    background: 'rgba(0,0,0,.45)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                  }}>
+                    <span style={{ fontSize: '28px', lineHeight: 1 }}>🔒</span>
+                  </div>
                 )}
                 {Number(curso.price) === 0 && (
                   <div style={{
@@ -163,6 +164,14 @@ export default async function DashboardPage() {
                 <div className="post-title" style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', lineHeight: 1.3, marginBottom: '6px' }}>
                   {curso.title}
                 </div>
+                {!curso.temAcesso && Number(curso.price) > 0 && (
+                  <div style={{
+                    fontFamily: 'var(--font-h)', fontSize: '13px', fontWeight: 700,
+                    color: 'var(--mg)', letterSpacing: '.04em', marginBottom: '6px',
+                  }}>
+                    🔒 R$ {Number(curso.price).toFixed(2).replace('.', ',')}
+                  </div>
+                )}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)' }}>
                   <span>{curso.concluidas}/{curso.total} aulas</span>
                   <span style={{ color: 'var(--cy)' }}>{curso.progresso}%</span>
