@@ -103,6 +103,17 @@ export default async function EditarCursoPage({ params }: { params: Promise<{ id
             </select>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="kiwifyProductId">ID do Produto na Kiwify</Label>
+            <Input
+              id="kiwifyProductId"
+              name="kiwifyProductId"
+              defaultValue={curso.kiwifyProductId ?? ''}
+              placeholder="Ex: prod_abc123"
+            />
+            <p className="text-xs text-slate-400">Kiwify → seu produto → copie o ID. Usado para liberar acesso automaticamente após pagamento.</p>
+          </div>
+
           <Button type="submit" className="w-full">Salvar alterações</Button>
         </form>
       </div>

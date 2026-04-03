@@ -56,6 +56,7 @@ export async function editarCurso(formData: FormData) {
       price: parseFloat(formData.get('price') as string) || 0,
       isSubscriptionOnly: formData.get('isSubscriptionOnly') === 'true',
       published: formData.get('published') === 'true',
+      kiwifyProductId: (formData.get('kiwifyProductId') as string) || null,
       ...(thumbnailUrl ? { thumbnailUrl } : {}),
     },
   })
@@ -252,6 +253,24 @@ export async function excluirAnexo(formData: FormData) {
   const courseId = formData.get('courseId') as string
   await prisma.lessonAttachment.delete({ where: { id } })
   redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
+}
+
+// ── Configurações ─────────────────────────────────────────────────────────────
+
+export async function salvarConfig(formData: FormData) {
+  await verificarAdmin()
+
+  const entries = Array.from(formData.entries()) as [string, string][]
+
+  for (const [key, value] of entries) {
+    await prisma.platformConfig.upsert({
+      where: { key },
+      create: { key, value },
+      update: { value },
+    })
+  }
+
+  revalidatePath('/admin/configuracoes')
 }
 
 // ── Canais do Fórum ───────────────────────────────────────────────────────────
