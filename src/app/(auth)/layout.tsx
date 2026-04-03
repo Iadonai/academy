@@ -22,8 +22,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <Image
           src="/logo-iadonai.png"
           alt="Comunidade Iadonai"
-          width={2000}
-          height={590}
+          width={1024}
+          height={302}
           style={{ width: '100%', height: 'auto', display: 'block' }}
           priority
         />
