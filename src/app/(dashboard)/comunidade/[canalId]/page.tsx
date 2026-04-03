@@ -112,7 +112,7 @@ export default async function CanalPage({
                           {post.user.name.toUpperCase()}
                         </div>
                         <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)' }} suppressHydrationWarning>
-                          // {new Date(post.createdAt).toLocaleDateString('pt-BR')}
+                          // {new Date(post.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                         </div>
                       </div>
                     </div>

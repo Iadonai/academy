@@ -109,7 +109,7 @@ export default async function ComunidadePage() {
                         <span style={{ fontFamily: 'var(--font-m)', fontSize: '9px', padding: '2px 6px', border: '1px solid rgba(155,111,255,.3)', color: 'var(--cy)', background: 'rgba(155,111,255,.06)' }}>MBR</span>
                       </div>
                       <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)' }} suppressHydrationWarning>
-                        // {new Date(post.createdAt).toLocaleDateString('pt-BR')}
+                        // {new Date(post.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                       </div>
                     </div>
                     <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', padding: '2px 8px', border: '1px solid rgba(155,111,255,.3)', color: 'var(--cy)' }}>

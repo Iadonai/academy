@@ -68,7 +68,7 @@ export function Comentarios({ lessonId, cursoId, comentarios }: Props) {
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-sm font-medium text-slate-900">{c.user.name}</span>
                   <span className="text-xs text-slate-400" suppressHydrationWarning>
-                    {new Date(c.createdAt).toLocaleDateString('pt-BR')}
+                    {new Date(c.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                   </span>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">{c.content}</p>

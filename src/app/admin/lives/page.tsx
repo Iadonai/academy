@@ -55,7 +55,7 @@ export default async function AdminLivesPage() {
                 <tr key={live.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-medium text-slate-900">{live.title}</td>
                   <td className="px-4 py-3 text-slate-500">
-                    {new Date(live.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                    {new Date(live.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })}
                   </td>
                   <td className="px-4 py-3 flex justify-end">
                     <BotaoExcluir action={excluirLive} fields={{ id: live.id }} mensagem={`Excluir a live "${live.title}"?`} />

@@ -185,7 +185,7 @@ export default async function RankingPage({
             {ranking.map((u) => {
               const ehEu = u.id === user.id
               const iniciais = u.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()
-              const desde = new Date(u.createdAt).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })
+              const desde = new Date(u.createdAt).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric', timeZone: 'America/Sao_Paulo' })
 
               return (
                 <div

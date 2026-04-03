@@ -62,7 +62,7 @@ export default async function AdminMembrosPage() {
                   <div className="font-medium text-slate-900 truncate">{m.name}</div>
                   <div className="text-xs text-slate-400">{m.email}</div>
                 </div>
-                <div className="text-xs text-slate-400">{new Date(m.createdAt).toLocaleDateString('pt-BR')}</div>
+                <div className="text-xs text-slate-400">{new Date(m.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</div>
                 <div className="flex gap-2">
                   <form action={aprovarMembro}>
                     <input type="hidden" name="id" value={m.id} />
@@ -110,7 +110,7 @@ export default async function AdminMembrosPage() {
                 <div>Nível {m.level}</div>
                 <div>{m.xpTotal} XP</div>
               </div>
-              <div className="text-xs text-slate-400">{new Date(m.createdAt).toLocaleDateString('pt-BR')}</div>
+              <div className="text-xs text-slate-400">{new Date(m.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</div>
               {m.role !== 'ADMIN' && (
                 <form action={banirMembro}>
                   <input type="hidden" name="id" value={m.id} />

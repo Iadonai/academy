@@ -87,7 +87,7 @@ export default async function LivesPage() {
                         {new Date(live.scheduledAt).getDate()}
                       </div>
                       <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--cy)', letterSpacing: '.06em' }}>
-                        {new Date(live.scheduledAt).toLocaleString('pt-BR', { month: 'short' }).toUpperCase()}
+                        {new Date(live.scheduledAt).toLocaleString('pt-BR', { month: 'short', timeZone: 'America/Sao_Paulo' }).toUpperCase()}
                       </div>
                     </div>
                     <div style={{ width: '1px', height: '40px', background: 'var(--bdr)' }} />
@@ -95,7 +95,7 @@ export default async function LivesPage() {
                       <div className="silver" style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', marginBottom: '3px' }}>{live.title}</div>
                       {live.description && <div style={{ fontSize: '12px', color: 'var(--mt)' }}>{live.description}</div>}
                       <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--cy)', marginTop: '4px', letterSpacing: '.06em' }}>
-                        {new Date(live.scheduledAt).toLocaleString('pt-BR', { weekday: 'long', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
+                        {new Date(live.scheduledAt).toLocaleString('pt-BR', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }).toUpperCase()}
                       </div>
                     </div>
                     <div style={{ background: 'rgba(91,200,255,.1)', border: '1px solid rgba(91,200,255,.3)', padding: '4px 10px', fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.1em' }}>
@@ -127,7 +127,7 @@ export default async function LivesPage() {
                       <div style={{ padding: '12px' }}>
                         <div className="silver" style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', marginBottom: '4px' }}>{live.title}</div>
                         <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', letterSpacing: '.04em' }}>
-                          {new Date(live.scheduledAt).toLocaleDateString('pt-BR')}
+                          {new Date(live.scheduledAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                         </div>
                       </div>
                     </div>
@@ -161,7 +161,7 @@ export default async function LivesPage() {
                     <div>
                       <div style={{ fontSize: '12px', color: isPast ? 'var(--mt)' : 'var(--tx)', fontWeight: 600 }}>{live.title}</div>
                       <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', marginTop: '2px' }}>
-                        {new Date(live.scheduledAt).toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit' })}h
+                        {new Date(live.scheduledAt).toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}h
                       </div>
                     </div>
                   </div>
