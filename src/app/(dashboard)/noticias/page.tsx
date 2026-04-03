@@ -1,8 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export const revalidate = 43200 // atualiza a cada 12 horas
-
 interface Artigo {
   title: string
   description: string | null
@@ -10,47 +8,23 @@ interface Artigo {
   urlToImage: string | null
   publishedAt: string
   source: { name: string }
-  author: string | null
 }
 
-async function buscarNoticias(): Promise<Artigo[]> {
+async function buscarNoticias(): Promise<{ artigos: Artigo[]; erro: string | null }> {
   const key = process.env.NEWS_API_KEY
-  if (!key) return []
+  if (!key) return { artigos: [], erro: 'API key não configurada' }
 
   try {
     const res = await fetch(
-      `https://newsapi.org/v2/top-headlines?category=technology&language=pt&pageSize=20&apiKey=${key}`,
-      { next: { revalidate: 43200 } }
+      `https://newsapi.org/v2/everything?q=tecnologia+automacao+python+inteligencia+artificial&language=pt&sortBy=publishedAt&pageSize=20&apiKey=${key}`,
+      { cache: 'no-store' }
     )
-
-    if (!res.ok) {
-      // fallback para inglês se não houver notícias em português
-      const resEn = await fetch(
-        `https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=20&apiKey=${key}`,
-        { next: { revalidate: 43200 } }
-      )
-      if (!resEn.ok) return []
-      const dataEn = await resEn.json()
-      return dataEn.articles ?? []
-    }
-
     const data = await res.json()
-    const artigos = data.articles ?? []
-
-    // Se não tiver artigos em PT, busca em inglês
-    if (artigos.length === 0) {
-      const resEn = await fetch(
-        `https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=20&apiKey=${key}`,
-        { next: { revalidate: 43200 } }
-      )
-      if (!resEn.ok) return []
-      const dataEn = await resEn.json()
-      return dataEn.articles ?? []
-    }
-
-    return artigos
-  } catch {
-    return []
+    if (!res.ok) return { artigos: [], erro: data.message ?? `Erro ${res.status}` }
+    const artigos = (data.articles ?? []).filter((a: Artigo) => a.title && a.title !== '[Removed]')
+    return { artigos, erro: null }
+  } catch (e) {
+    return { artigos: [], erro: String(e) }
   }
 }
 
@@ -59,99 +33,79 @@ export default async function NoticiasPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const artigos = await buscarNoticias()
-  const agora = new Date()
+  const { artigos, erro } = await buscarNoticias()
 
   return (
     <div style={{ padding: '16px 20px' }}>
-      {/* Hero */}
       <div className="hero-banner" style={{ marginBottom: '20px' }}>
         <div>
-          <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--cy)', background: 'rgba(91,200,255,.08)', border: '1px solid rgba(91,200,255,.25)', padding: '3px 8px', letterSpacing: '.1em', marginBottom: '8px', display: 'inline-block' }}>
-            // FEED
-          </div>
-          <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '18px', fontWeight: 900, letterSpacing: '.06em', marginBottom: '4px' }}>
-            NOTÍCIAS DE TECNOLOGIA
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--mt)' }} suppressHydrationWarning>
-            Atualizado em {agora.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })}
-          </div>
+          <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--cy)', background: 'rgba(91,200,255,.08)', border: '1px solid rgba(91,200,255,.25)', padding: '3px 8px', letterSpacing: '.1em', marginBottom: '8px', display: 'inline-block' }}>// FEED</div>
+          <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '18px', fontWeight: 900, letterSpacing: '.06em' }}>NOTÍCIAS DE TECNOLOGIA</div>
         </div>
-        <div className="hero-hex" style={{ fontSize: '12px' }}>NEWS</div>
+        <div style={{ textAlign: 'right' }}>
+          <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '28px' }}>{artigos.length}</div>
+          <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', letterSpacing: '.08em' }}>// ARTIGOS</div>
+        </div>
       </div>
 
-      {artigos.length === 0 ? (
+      {erro && (
+        <div style={{ background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.3)', padding: '12px 16px', marginBottom: '16px', fontFamily: 'var(--font-m)', fontSize: '12px', color: '#f87171' }}>
+          ⚠ {erro}
+        </div>
+      )}
+
+      {artigos.length === 0 && !erro ? (
         <div style={{ background: 'var(--s2)', border: '1px dashed var(--bdr)', padding: '60px 20px', textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-m)', color: 'var(--mt)', fontSize: '12px', letterSpacing: '.06em' }}>
-            CARREGANDO NOTÍCIAS...
-          </p>
+          <p style={{ fontFamily: 'var(--font-m)', color: 'var(--mt)', fontSize: '12px', letterSpacing: '.06em' }}>SEM NOTÍCIAS NO MOMENTO.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px' }}>
-          {artigos
-            .filter((a) => a.title && a.title !== '[Removed]')
-            .map((artigo, i) => (
-              <div key={i} className="punk-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ borderTop: '2px solid var(--cy)' }} />
-
-                {/* Imagem */}
-                {artigo.urlToImage ? (
-                  <div style={{ height: '160px', overflow: 'hidden', background: 'var(--s3)' }}>
-                    <img
-                      src={artigo.urlToImage}
-                      alt={artigo.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                  </div>
-                ) : (
-                  <div style={{ height: '80px', background: 'var(--s3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '28px', color: 'var(--cy)', opacity: .2 }}>⚡</span>
-                  </div>
-                )}
-
-                <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {/* Fonte + data */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
-                      // {artigo.source.name}
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', letterSpacing: '.04em' }} suppressHydrationWarning>
-                      {new Date(artigo.publishedAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
-                    </div>
-                  </div>
-
-                  {/* Título */}
-                  <div className="post-title" style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', lineHeight: 1.35 }}>
-                    {artigo.title}
-                  </div>
-
-                  {/* Resumo */}
-                  {artigo.description && (
-                    <div style={{ fontSize: '12px', color: 'var(--mt)', lineHeight: 1.6, flex: 1 }}>
-                      {artigo.description}
-                    </div>
-                  )}
-
-                  {/* Botão */}
-                  <a
-                    href={artigo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '6px',
-                      marginTop: '4px', padding: '6px 14px',
-                      fontFamily: 'var(--font-m)', fontSize: '10px', letterSpacing: '.1em',
-                      color: 'var(--cy)', border: '1px solid rgba(91,200,255,.3)',
-                      background: 'rgba(91,200,255,.06)', textDecoration: 'none',
-                      alignSelf: 'flex-start',
-                    }}
-                  >
-                    LER MATÉRIA →
-                  </a>
-                </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+          {artigos.map((artigo, i) => (
+            <div key={i} style={{
+              background: 'var(--s2)',
+              border: '1px solid var(--bdr)', borderLeft: '3px solid var(--cy)',
+              display: 'flex', flexDirection: 'column', gap: '8px', padding: '14px',
+            }}>
+              {/* Fonte + data */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.1em' }}>
+                  // {artigo.source.name.toUpperCase()}
+                </span>
+                <span style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)' }} suppressHydrationWarning>
+                  {new Date(artigo.publishedAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+                </span>
               </div>
-            ))}
+
+              {/* Imagem */}
+              {artigo.urlToImage && (
+                <div style={{ height: '140px', overflow: 'hidden', borderRadius: '2px' }}>
+                  <img src={artigo.urlToImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              )}
+
+              {/* Título */}
+              <div style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', lineHeight: 1.4, color: 'var(--tx)' }}>
+                {artigo.title}
+              </div>
+
+              {/* Resumo */}
+              {artigo.description && (
+                <div style={{ fontSize: '12px', color: 'var(--mt)', lineHeight: 1.55, flex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {artigo.description}
+                </div>
+              )}
+
+              {/* Botão */}
+              <a href={artigo.url} target="_blank" rel="noopener noreferrer" style={{
+                marginTop: 'auto', display: 'inline-block', padding: '5px 12px',
+                fontFamily: 'var(--font-m)', fontSize: '10px', letterSpacing: '.08em',
+                color: 'var(--cy)', border: '1px solid rgba(91,200,255,.3)',
+                background: 'rgba(91,200,255,.05)', textDecoration: 'none', alignSelf: 'flex-start',
+              }}>
+                LER MATÉRIA →
+              </a>
+            </div>
+          ))}
         </div>
       )}
     </div>
