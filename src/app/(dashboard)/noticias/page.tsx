@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export const revalidate = 3600 // atualiza a cada 1 hora
+export const revalidate = 43200 // atualiza a cada 12 horas
 
 interface Artigo {
   title: string
@@ -19,15 +19,15 @@ async function buscarNoticias(): Promise<Artigo[]> {
 
   try {
     const res = await fetch(
-      `https://newsapi.org/v2/top-headlines?category=technology&language=pt&pageSize=30&apiKey=${key}`,
-      { next: { revalidate: 3600 } }
+      `https://newsapi.org/v2/top-headlines?category=technology&language=pt&pageSize=20&apiKey=${key}`,
+      { next: { revalidate: 43200 } }
     )
 
     if (!res.ok) {
       // fallback para inglês se não houver notícias em português
       const resEn = await fetch(
-        `https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=30&apiKey=${key}`,
-        { next: { revalidate: 3600 } }
+        `https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=20&apiKey=${key}`,
+        { next: { revalidate: 43200 } }
       )
       if (!resEn.ok) return []
       const dataEn = await resEn.json()
@@ -40,8 +40,8 @@ async function buscarNoticias(): Promise<Artigo[]> {
     // Se não tiver artigos em PT, busca em inglês
     if (artigos.length === 0) {
       const resEn = await fetch(
-        `https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=30&apiKey=${key}`,
-        { next: { revalidate: 3600 } }
+        `https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=20&apiKey=${key}`,
+        { next: { revalidate: 43200 } }
       )
       if (!resEn.ok) return []
       const dataEn = await resEn.json()
