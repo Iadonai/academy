@@ -69,11 +69,9 @@ export async function cadastro(formData: FormData) {
     redirect('/cadastro?erro=email-ja-cadastrado')
   }
 
-  const status = convite ? 'ACTIVE' : 'PENDING'
-
   await prisma.user.upsert({
     where: { id: data.user.id },
-    create: { id: data.user.id, email, name: nome, status },
+    create: { id: data.user.id, email, name: nome, status: 'ACTIVE' },
     update: { name: nome },
   })
 
