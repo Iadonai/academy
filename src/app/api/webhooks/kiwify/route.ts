@@ -17,13 +17,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    console.log('[kiwify] body completo:', JSON.stringify(body, null, 2))
-    const evento = body.webhook_event_type as string
+const evento = body.webhook_event_type as string
 
     // Email e nome do comprador
     const email = body.Customer?.email as string
     const nome = body.Customer?.full_name as string
-    const produtoId = body.Product?.id as string
+    const produtoId = (body.Product?.product_id ?? body.Product?.id) as string
     const planId = body.Subscription?.plan_id as string | undefined
 
     if (!email || !produtoId) {
