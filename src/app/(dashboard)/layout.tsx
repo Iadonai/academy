@@ -78,6 +78,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <NavLink href="/noticias">Notícias</NavLink>
           <NavLink href="/vagas">Vagas</NavLink>
           <NavLink href="/trending">Trends</NavLink>
+          <NavLink href="/stack">Stack</NavLink>
           <NavLink href="/ranking">Ranking</NavLink>
           {isAdmin && <NavLink href="/admin">Admin</NavLink>}
         </div>
