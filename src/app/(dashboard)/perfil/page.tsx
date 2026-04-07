@@ -2,23 +2,68 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { editarPerfil } from '@/app/actions/perfil'
+import { RadarHabilidades } from '@/components/perfil/RadarHabilidades'
+
+// Mapeia palavras-chave do título do curso para habilidades
+const SKILL_MAP: { skill: string; cor: string; keywords: string[] }[] = [
+  { skill: 'Python', cor: '#3b82f6', keywords: ['python'] },
+  { skill: 'Power BI', cor: '#f59e0b', keywords: ['power bi', 'powerbi', 'bi', 'dashboard'] },
+  { skill: 'Dados', cor: '#22c55e', keywords: ['dados', 'data', 'pandas', 'excel', 'analytics', 'analise'] },
+  { skill: 'IA', cor: '#a855f7', keywords: ['ia', 'inteligencia artificial', 'machine learning', 'chatgpt', 'llm'] },
+  { skill: 'Automação', cor: 'var(--cy)', keywords: ['automacao', 'automação', 'n8n', 'rpa', 'zapier', 'make'] },
+  { skill: 'Negócios', cor: '#ef4444', keywords: ['negocio', 'negócio', 'gestao', 'gestão', 'marketing', 'vendas'] },
+]
 
 export default async function PerfilPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [perfil, totalPosts, totalRespostas, progresses] = await Promise.all([
+  const [perfil, totalPosts, progresses, cursosConcluidosRaw] = await Promise.all([
     prisma.user.findUnique({
       where: { id: user.id },
       select: { name: true, email: true, avatarUrl: true, xpTotal: true, level: true, createdAt: true },
     }),
     prisma.post.count({ where: { userId: user.id } }),
-    prisma.postReply.count({ where: { userId: user.id } }),
     prisma.lessonProgress.count({ where: { userId: user.id } }),
+    // Busca cursos com progresso 100%
+    prisma.course.findMany({
+      where: { published: true },
+      select: {
+        title: true,
+        modules: {
+          select: {
+            lessons: {
+              select: {
+                id: true,
+                lessonProgresses: { where: { userId: user.id }, select: { lessonId: true } },
+              },
+            },
+          },
+        },
+      },
+    }),
   ])
 
   if (!perfil) redirect('/login')
+
+  // Calcula habilidades com base nos cursos com algum progresso
+  const habilidades = SKILL_MAP.map((s) => {
+    let pontos = 0
+    let total = 0
+    for (const curso of cursosConcluidosRaw) {
+      const titulo = curso.title.toLowerCase()
+      if (!s.keywords.some((k) => titulo.includes(k))) continue
+      const todasAulas = curso.modules.flatMap((m) => m.lessons)
+      const concluidas = todasAulas.filter((l) => l.lessonProgresses.length > 0).length
+      if (todasAulas.length > 0) {
+        pontos += concluidas / todasAulas.length
+        total += 1
+      }
+    }
+    const valor = total > 0 ? Math.round((pontos / total) * 100) : 0
+    return { nome: s.skill, valor, cor: s.cor }
+  }).filter((h) => h.valor > 0)
 
   const iniciais = perfil.name
     .split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()
@@ -88,6 +133,14 @@ export default async function PerfilPage() {
           {xpNoNivel} / {xpParaProximoNivel} XP para o nível {perfil.level + 1}
         </div>
       </div>
+
+      {/* Radar de habilidades */}
+      {habilidades.length >= 3 && (
+        <div className="punk-card" style={{ padding: '18px', marginBottom: '16px' }}>
+          <div className="section-title" style={{ fontFamily: 'var(--font-h)', fontSize: '11px', letterSpacing: '.12em', marginBottom: '20px' }}>// RADAR DE HABILIDADES</div>
+          <RadarHabilidades habilidades={habilidades} />
+        </div>
+      )}
 
       {/* Formulário de edição */}
       <div className="punk-card" style={{ padding: '18px' }}>
