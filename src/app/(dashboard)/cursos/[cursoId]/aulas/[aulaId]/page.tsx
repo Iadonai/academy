@@ -6,6 +6,7 @@ import { youtubeEmbedUrl } from '@/lib/youtube'
 import { BotaoConcluida } from '@/components/aula/BotaoConcluida'
 import { Comentarios } from '@/components/aula/Comentarios'
 import { NotasPessoais } from '@/components/aula/NotasPessoais'
+import { PomodoroWidget } from '@/components/aula/PomodoroWidget'
 
 export default async function AulaPage({
   params,
@@ -86,6 +87,7 @@ export default async function AulaPage({
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col lg:flex-row">
+      <PomodoroWidget lessonId={aulaId} />
       {/* Conteúdo principal */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Vídeo */}
