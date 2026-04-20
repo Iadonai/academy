@@ -207,18 +207,19 @@ export async function adicionarLink(formData: FormData) {
 }
 
 export async function adicionarArquivo(formData: FormData) {
-  await verificarAdmin()
-
-  const file = formData.get('file') as File
-  const lessonId = formData.get('lessonId') as string
   const moduleId = formData.get('moduleId') as string
   const courseId = formData.get('courseId') as string
-  const name = (formData.get('name') as string) || file?.name || 'Arquivo'
   const base = `/admin/cursos/${courseId}/modulos/${moduleId}/aulas`
 
-  if (!file || file.size === 0) redirect(`${base}?erro=arquivo-vazio`)
-
   try {
+    await verificarAdmin()
+
+    const file = formData.get('file') as File
+    const lessonId = formData.get('lessonId') as string
+    const name = (formData.get('name') as string) || file?.name || 'Arquivo'
+
+    if (!file || file.size === 0) redirect(`${base}?erro=arquivo-vazio`)
+
     const supabase = await createClient()
     const ext = file.name.split('.').pop()
     const caminho = `${lessonId}/${Date.now()}.${ext}`
