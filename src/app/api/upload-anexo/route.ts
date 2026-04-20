@@ -1,16 +1,14 @@
-'use server'
-
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { verificarAdmin } from '@/lib/admin'
 
 export async function POST(request: NextRequest) {
-  try {
-    await verificarAdmin()
-  } catch {
-    return NextResponse.json({ erro: 'Não autorizado' }, { status: 401 })
-  }
+  const supabaseAuth = await createClient()
+  const { data: { user } } = await supabaseAuth.auth.getUser()
+  if (!user) return NextResponse.json({ erro: 'Não autorizado' }, { status: 401 })
+
+  const perfil = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true } })
+  if (perfil?.role !== 'ADMIN') return NextResponse.json({ erro: 'Não autorizado' }, { status: 403 })
 
   const formData = await request.formData()
   const file = formData.get('file') as File
