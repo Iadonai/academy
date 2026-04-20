@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { verificarAdmin } from '@/lib/admin'
+import { createClient } from '@/lib/supabase/server'
 
 // ── Cursos ───────────────────────────────────────────────────────────────────
 
@@ -32,7 +33,6 @@ export async function editarCurso(formData: FormData) {
   let thumbnailUrl: string | undefined
 
   if (thumbnail && thumbnail.size > 0) {
-    const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
 
     const ext = thumbnail.name.split('.').pop()
@@ -216,13 +216,9 @@ export async function adicionarArquivo(formData: FormData) {
   const name = (formData.get('name') as string) || file?.name || 'Arquivo'
   const base = `/admin/cursos/${courseId}/modulos/${moduleId}/aulas`
 
-  if (!file || file.size === 0) {
-    redirect(`${base}?erro=arquivo-vazio`)
-  }
+  if (!file || file.size === 0) redirect(`${base}?erro=arquivo-vazio`)
 
-  const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
-
   const ext = file.name.split('.').pop()
   const caminho = `${lessonId}/${Date.now()}.${ext}`
 
@@ -230,31 +226,15 @@ export async function adicionarArquivo(formData: FormData) {
     .from('lesson-attachments')
     .upload(caminho, file, { contentType: file.type || 'application/octet-stream' })
 
-  if (uploadError) {
-    redirect(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(uploadError.message)}`)
-  }
+  if (uploadError) redirect(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(uploadError.message)}`)
 
   const { data: urlData } = supabase.storage.from('lesson-attachments').getPublicUrl(caminho)
 
-  const tipo = file.type === 'application/pdf'
-    ? 'PDF'
-    : file.type.startsWith('image/')
-    ? 'IMAGE'
-    : 'FILE'
+  const tipo = file.type === 'application/pdf' ? 'PDF' : file.type.startsWith('image/') ? 'IMAGE' : 'FILE'
 
-  let dbErro: string | null = null
-  try {
-    await prisma.lessonAttachment.create({
-      data: { lessonId, name, type: tipo, url: urlData.publicUrl },
-    })
-  } catch (e: unknown) {
-    if (e && typeof e === 'object' && 'digest' in e) throw e
-    dbErro = e instanceof Error ? e.message : String(e)
-  }
-
-  if (dbErro) {
-    redirect(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(dbErro)}`)
-  }
+  await prisma.lessonAttachment.create({
+    data: { lessonId, name, type: tipo, url: urlData.publicUrl },
+  })
 
   redirect(base)
 }
