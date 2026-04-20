@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { verificarAdmin } from '@/lib/admin'
-import { criarAula, editarAula, excluirAula, adicionarLink, excluirAnexo, adicionarArquivo } from '@/app/actions/admin'
+import { criarAula, editarAula, excluirAula, adicionarLink, excluirAnexo } from '@/app/actions/admin'
 import { youtubeEmbedUrl } from '@/lib/youtube'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -167,7 +167,7 @@ export default async function AulasPage({
                   {/* Adicionar arquivo */}
                   <div className="border-t border-slate-100 pt-3">
                     <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Adicionar arquivo</p>
-                    <form action={adicionarArquivo} className="flex gap-2 flex-wrap">
+                    <form method="POST" action="/api/upload-anexo" encType="multipart/form-data" className="flex gap-2 flex-wrap">
                       <input type="hidden" name="lessonId" value={aula.id} />
                       <input type="hidden" name="moduleId" value={modulo.id} />
                       <input type="hidden" name="courseId" value={id} />
