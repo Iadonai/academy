@@ -242,9 +242,19 @@ export async function adicionarArquivo(formData: FormData) {
     ? 'IMAGE'
     : 'FILE'
 
-  await prisma.lessonAttachment.create({
-    data: { lessonId, name, type: tipo, url: urlData.publicUrl },
-  })
+  let dbErro: string | null = null
+  try {
+    await prisma.lessonAttachment.create({
+      data: { lessonId, name, type: tipo, url: urlData.publicUrl },
+    })
+  } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'digest' in e) throw e
+    dbErro = e instanceof Error ? e.message : String(e)
+  }
+
+  if (dbErro) {
+    redirect(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(dbErro)}`)
+  }
 
   redirect(base)
 }
