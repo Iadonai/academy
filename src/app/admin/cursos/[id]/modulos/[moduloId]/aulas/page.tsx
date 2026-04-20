@@ -11,11 +11,14 @@ import { BotaoExcluir } from '@/components/admin/BotaoExcluir'
 
 export default async function AulasPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; moduloId: string }>
+  searchParams: Promise<{ erro?: string }>
 }) {
   await verificarAdmin()
   const { id, moduloId } = await params
+  const { erro } = await searchParams
 
   const modulo = await prisma.module.findUnique({
     where: { id: moduloId },
@@ -32,6 +35,12 @@ export default async function AulasPage({
 
   return (
     <div className="p-8 max-w-3xl">
+      {erro && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+          {erro === 'upload-falhou' && '❌ Falha no upload. Verifique se o bucket "lesson-attachments" existe no Supabase Storage e está público.'}
+          {erro === 'arquivo-vazio' && '❌ Arquivo vazio. Selecione um arquivo válido.'}
+        </div>
+      )}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <Link href="/admin/cursos" className="text-sm text-slate-500 hover:text-slate-700">← Cursos</Link>
         <span className="text-slate-300">/</span>
