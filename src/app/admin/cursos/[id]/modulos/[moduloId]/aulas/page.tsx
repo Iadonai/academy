@@ -14,11 +14,11 @@ export default async function AulasPage({
   searchParams,
 }: {
   params: Promise<{ id: string; moduloId: string }>
-  searchParams: Promise<{ erro?: string }>
+  searchParams: Promise<{ erro?: string; detalhe?: string }>
 }) {
   await verificarAdmin()
   const { id, moduloId } = await params
-  const { erro } = await searchParams
+  const { erro, detalhe } = await searchParams
 
   const modulo = await prisma.module.findUnique({
     where: { id: moduloId },
@@ -37,7 +37,7 @@ export default async function AulasPage({
     <div className="p-8 max-w-3xl">
       {erro && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-          {erro === 'upload-falhou' && '❌ Falha no upload. Verifique se o bucket "lesson-attachments" existe no Supabase Storage e está público.'}
+          {erro === 'upload-falhou' && `❌ Falha no upload. ${detalhe ? detalhe : 'Verifique se o bucket "lesson-attachments" existe no Supabase Storage e está público.'}`}
           {erro === 'arquivo-vazio' && '❌ Arquivo vazio. Selecione um arquivo válido.'}
         </div>
       )}
