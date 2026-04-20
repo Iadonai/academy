@@ -16,6 +16,7 @@ export async function criarCurso(formData: FormData) {
       description: formData.get('description') as string,
       price: parseFloat(formData.get('price') as string) || 0,
       isSubscriptionOnly: formData.get('isSubscriptionOnly') === 'true',
+      skill: (formData.get('skill') as string) || null,
       published: false,
     },
   })
@@ -56,6 +57,7 @@ export async function editarCurso(formData: FormData) {
       price: parseFloat(formData.get('price') as string) || 0,
       isSubscriptionOnly: formData.get('isSubscriptionOnly') === 'true',
       published: formData.get('published') === 'true',
+      skill: (formData.get('skill') as string) || null,
       kiwifyProductId: (formData.get('kiwifyProductId') as string) || null,
       kiwifyCheckoutUrl: (formData.get('kiwifyCheckoutUrl') as string) || null,
       ...(thumbnailUrl ? { thumbnailUrl } : {}),
@@ -206,7 +208,7 @@ export async function adicionarLink(formData: FormData) {
   redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
 }
 
-export async function adicionarPdf(formData: FormData) {
+export async function adicionarArquivo(formData: FormData) {
   await verificarAdmin()
 
   const file = formData.get('file') as File
@@ -235,17 +237,26 @@ export async function adicionarPdf(formData: FormData) {
 
   const { data } = supabase.storage.from('lesson-attachments').getPublicUrl(caminho)
 
+  const tipo = file.type === 'application/pdf'
+    ? 'PDF'
+    : file.type.startsWith('image/')
+    ? 'IMAGE'
+    : 'FILE'
+
   await prisma.lessonAttachment.create({
     data: {
       lessonId,
       name,
-      type: 'PDF',
+      type: tipo,
       url: data.publicUrl,
     },
   })
 
   redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
 }
+
+/** @deprecated use adicionarArquivo */
+export const adicionarPdf = adicionarArquivo
 
 export async function excluirAnexo(formData: FormData) {
   await verificarAdmin()

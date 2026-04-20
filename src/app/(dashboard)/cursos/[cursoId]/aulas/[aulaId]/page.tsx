@@ -161,15 +161,17 @@ export default async function AulaPage({
                       href={anexo.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      download={anexo.type === 'PDF'}
+                      download={anexo.type === 'PDF' || anexo.type === 'FILE'}
                       className="flex items-center gap-3 p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
                     >
-                      <span className="text-xl shrink-0">{anexo.type === 'PDF' ? '📄' : '🔗'}</span>
+                      <span className="text-xl shrink-0">
+                        {anexo.type === 'PDF' ? '📄' : anexo.type === 'IMAGE' ? '🖼️' : anexo.type === 'FILE' ? '📁' : '🔗'}
+                      </span>
                       <span className="text-sm text-slate-700 group-hover:text-blue-700 font-medium flex-1">
                         {anexo.name}
                       </span>
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors shrink-0">
-                        {anexo.type === 'PDF' ? 'Baixar PDF' : 'Abrir link'}
+                        {anexo.type === 'PDF' ? 'Baixar PDF' : anexo.type === 'IMAGE' ? 'Ver imagem' : anexo.type === 'FILE' ? 'Baixar arquivo' : 'Abrir link'}
                       </span>
                     </a>
                   ))}

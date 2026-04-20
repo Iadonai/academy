@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { verificarAdmin } from '@/lib/admin'
-import { criarAula, editarAula, excluirAula, adicionarLink, adicionarPdf, excluirAnexo } from '@/app/actions/admin'
+import { criarAula, editarAula, excluirAula, adicionarLink, adicionarArquivo, excluirAnexo } from '@/app/actions/admin'
 import { youtubeEmbedUrl } from '@/lib/youtube'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -155,16 +155,16 @@ export default async function AulasPage({
                     </form>
                   </div>
 
-                  {/* Adicionar PDF */}
+                  {/* Adicionar arquivo */}
                   <div className="border-t border-slate-100 pt-3">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Adicionar PDF</p>
-                    <form action={adicionarPdf} className="flex gap-2 flex-wrap" encType="multipart/form-data">
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Adicionar arquivo</p>
+                    <form action={adicionarArquivo} className="flex gap-2 flex-wrap" encType="multipart/form-data">
                       <input type="hidden" name="lessonId" value={aula.id} />
                       <input type="hidden" name="moduleId" value={modulo.id} />
                       <input type="hidden" name="courseId" value={id} />
                       <Input name="name" placeholder="Nome do arquivo" className="h-8 text-sm w-40" required />
-                      <input type="file" name="file" accept=".pdf" required className="text-sm text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-md file:border file:border-slate-200 file:text-sm file:bg-white file:text-slate-700 hover:file:bg-slate-50" />
-                      <Button type="submit" variant="outline" size="sm">+ PDF</Button>
+                      <input type="file" name="file" required className="text-sm text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-md file:border file:border-slate-200 file:text-sm file:bg-white file:text-slate-700 hover:file:bg-slate-50" />
+                      <Button type="submit" variant="outline" size="sm">+ Arquivo</Button>
                     </form>
                   </div>
                 </div>

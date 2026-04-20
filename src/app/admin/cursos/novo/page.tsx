@@ -55,6 +55,24 @@ export default async function NovoCursoPage() {
             </select>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="skill">Categoria / Habilidade</Label>
+            <select
+              id="skill"
+              name="skill"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">Sem categoria</option>
+              <option value="Python">Python</option>
+              <option value="Power BI">Power BI</option>
+              <option value="Dados">Dados</option>
+              <option value="IA">IA</option>
+              <option value="Automação">Automação</option>
+              <option value="Negócios">Negócios</option>
+            </select>
+            <p className="text-xs text-slate-400">Aparece no radar de habilidades do aluno ao concluir o curso.</p>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <Button type="submit" className="w-full">Criar curso e adicionar módulos →</Button>
           </div>
