@@ -218,23 +218,29 @@ export async function adicionarArquivo(formData: FormData) {
 
   if (!file || file.size === 0) redirect(`${base}?erro=arquivo-vazio`)
 
-  const supabase = await createClient()
-  const ext = file.name.split('.').pop()
-  const caminho = `${lessonId}/${Date.now()}.${ext}`
+  try {
+    const supabase = await createClient()
+    const ext = file.name.split('.').pop()
+    const caminho = `${lessonId}/${Date.now()}.${ext}`
 
-  const { error: uploadError } = await supabase.storage
-    .from('lesson-attachments')
-    .upload(caminho, file, { contentType: file.type || 'application/octet-stream' })
+    const { error: uploadError } = await supabase.storage
+      .from('lesson-attachments')
+      .upload(caminho, file, { contentType: file.type || 'application/octet-stream' })
 
-  if (uploadError) redirect(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(uploadError.message)}`)
+    if (uploadError) redirect(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(uploadError.message)}`)
 
-  const { data: urlData } = supabase.storage.from('lesson-attachments').getPublicUrl(caminho)
+    const { data: urlData } = supabase.storage.from('lesson-attachments').getPublicUrl(caminho)
 
-  const tipo = file.type === 'application/pdf' ? 'PDF' : file.type.startsWith('image/') ? 'IMAGE' : 'FILE'
+    const tipo = file.type === 'application/pdf' ? 'PDF' : file.type.startsWith('image/') ? 'IMAGE' : 'FILE'
 
-  await prisma.lessonAttachment.create({
-    data: { lessonId, name, type: tipo, url: urlData.publicUrl },
-  })
+    await prisma.lessonAttachment.create({
+      data: { lessonId, name, type: tipo, url: urlData.publicUrl },
+    })
+  } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'digest' in e) throw e
+    const msg = e instanceof Error ? e.message : String(e)
+    redirect(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(msg)}`)
+  }
 
   redirect(base)
 }
