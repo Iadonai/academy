@@ -30,6 +30,7 @@ export function BotaoConcluida({ concluida, lessonId, cursoId }: Props) {
         await desmarcarConcluida(formData)
       }
       router.refresh()
+      router.push(window.location.pathname)
     })
   }
 

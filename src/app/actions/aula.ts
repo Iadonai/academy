@@ -55,7 +55,7 @@ export async function marcarConcluida(formData: FormData) {
     }
   }
 
-  revalidatePath('/cursos/[cursoId]/aulas/[aulaId]', 'page')
+  revalidatePath(`/cursos/${cursoId}/aulas/${lessonId}`)
   revalidatePath(`/cursos/${cursoId}`)
 }
 
@@ -68,7 +68,7 @@ export async function desmarcarConcluida(formData: FormData) {
     where: { userId: user.id, lessonId },
   })
 
-  revalidatePath('/cursos/[cursoId]/aulas/[aulaId]', 'page')
+  revalidatePath(`/cursos/${cursoId}/aulas/${lessonId}`)
   revalidatePath(`/cursos/${cursoId}`)
 }
 
