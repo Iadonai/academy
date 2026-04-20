@@ -220,6 +220,7 @@ export default async function AulaPage({
                   <Link
                     key={l.id}
                     href={`/cursos/${cursoId}/aulas/${l.id}`}
+                    prefetch={false}
                     className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
                       isAtual ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'
                     }`}
