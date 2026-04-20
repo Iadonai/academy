@@ -214,43 +214,39 @@ export async function adicionarArquivo(formData: FormData) {
   const moduleId = formData.get('moduleId') as string
   const courseId = formData.get('courseId') as string
   const name = (formData.get('name') as string) || file?.name || 'Arquivo'
+  const base = `/admin/cursos/${courseId}/modulos/${moduleId}/aulas`
 
   if (!file || file.size === 0) {
-    redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas?erro=arquivo-vazio`)
+    redirect(`${base}?erro=arquivo-vazio`)
   }
 
-  try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
 
-    const ext = file.name.split('.').pop()
-    const caminho = `${lessonId}/${Date.now()}.${ext}`
+  const ext = file.name.split('.').pop()
+  const caminho = `${lessonId}/${Date.now()}.${ext}`
 
-    const { error } = await supabase.storage
-      .from('lesson-attachments')
-      .upload(caminho, file, { contentType: file.type || 'application/octet-stream' })
+  const { error: uploadError } = await supabase.storage
+    .from('lesson-attachments')
+    .upload(caminho, file, { contentType: file.type || 'application/octet-stream' })
 
-    if (error) {
-      redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas?erro=upload-falhou&detalhe=${encodeURIComponent(error.message)}`)
-    }
-
-    const { data } = supabase.storage.from('lesson-attachments').getPublicUrl(caminho)
-
-    const tipo = file.type === 'application/pdf'
-      ? 'PDF'
-      : file.type.startsWith('image/')
-      ? 'IMAGE'
-      : 'FILE'
-
-    await prisma.lessonAttachment.create({
-      data: { lessonId, name, type: tipo, url: data.publicUrl },
-    })
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'erro-desconhecido'
-    redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas?erro=upload-falhou&detalhe=${encodeURIComponent(msg)}`)
+  if (uploadError) {
+    redirect(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(uploadError.message)}`)
   }
 
-  redirect(`/admin/cursos/${courseId}/modulos/${moduleId}/aulas`)
+  const { data: urlData } = supabase.storage.from('lesson-attachments').getPublicUrl(caminho)
+
+  const tipo = file.type === 'application/pdf'
+    ? 'PDF'
+    : file.type.startsWith('image/')
+    ? 'IMAGE'
+    : 'FILE'
+
+  await prisma.lessonAttachment.create({
+    data: { lessonId, name, type: tipo, url: urlData.publicUrl },
+  })
+
+  redirect(base)
 }
 
 /** @deprecated use adicionarArquivo */
