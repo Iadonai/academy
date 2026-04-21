@@ -132,69 +132,66 @@ export default async function DashboardPage() {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
           {cursosComProgresso.map((curso) => (
-            <Link key={curso.id} href={`/cursos/${curso.id}`} className="course-card" style={{ opacity: curso.temAcesso ? 1 : 0.85 }}>
-              {/* Thumb */}
-              <div style={{ height: '110px', background: 'var(--s3)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-                {curso.thumbnailUrl ? (
-                  <img src={curso.thumbnailUrl} alt={curso.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <>
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 9px,rgba(91,200,255,.03) 9px,rgba(91,200,255,.03) 10px),repeating-linear-gradient(90deg,transparent,transparent 9px,rgba(91,200,255,.03) 9px,rgba(91,200,255,.03) 10px)',
-                    }} />
-                    <span style={{ fontFamily: 'var(--font-h)', fontSize: '32px', color: 'var(--cy)', opacity: .3, position: 'relative' }}>
-                      {curso.title.charAt(0)}
-                    </span>
-                  </>
-                )}
-                {curso.progresso === 100 && (
-                  <div style={{
-                    position: 'absolute', top: '8px', right: '8px',
-                    background: 'rgba(91,200,255,.15)', border: '1px solid rgba(91,200,255,.4)',
-                    color: 'var(--cy)', fontFamily: 'var(--font-m)', fontSize: '9px',
-                    padding: '2px 7px', letterSpacing: '.08em',
-                  }}>CONCLUÍDO</div>
-                )}
-                {!curso.temAcesso && Number(curso.price) > 0 && (
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: 'rgba(0,0,0,.45)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                  }}>
-                    <span style={{ fontSize: '28px', lineHeight: 1 }}>🔒</span>
-                  </div>
-                )}
-                {Number(curso.price) === 0 && (
-                  <div style={{
-                    position: 'absolute', top: '8px', left: '8px',
-                    background: 'rgba(34,197,94,.15)', border: '1px solid rgba(34,197,94,.4)',
-                    color: '#22c55e', fontFamily: 'var(--font-m)', fontSize: '9px',
-                    padding: '2px 7px', letterSpacing: '.08em',
-                  }}>GRÁTIS</div>
-                )}
-              </div>
-              {/* Accent bar */}
-              <div style={{ height: '2px', background: 'var(--cy)' }} />
-              {/* Info */}
-              <div style={{ padding: '10px 12px' }}>
-                <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: '4px' }}>
-                  // CURSO
+            <Link key={curso.id} href={`/cursos/${curso.id}`} className="course-card" style={{ opacity: curso.temAcesso ? 1 : 0.85, position: 'relative', overflow: 'hidden', aspectRatio: '16/10', display: 'block' }}>
+              {/* Capa full */}
+              {curso.thumbnailUrl ? (
+                <img src={curso.thumbnailUrl} alt={curso.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{
+                  position: 'absolute', inset: 0, background: 'var(--s3)',
+                  backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 9px,rgba(91,200,255,.03) 9px,rgba(91,200,255,.03) 10px),repeating-linear-gradient(90deg,transparent,transparent 9px,rgba(91,200,255,.03) 9px,rgba(91,200,255,.03) 10px)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '48px', color: 'var(--cy)', opacity: .3 }}>
+                    {curso.title.charAt(0)}
+                  </span>
                 </div>
-                <div className="post-title" style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', lineHeight: 1.3, marginBottom: '6px' }}>
+              )}
+
+              {/* Gradiente inferior */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.3) 50%, transparent 100%)' }} />
+
+              {/* Badge topo esquerdo */}
+              {Number(curso.price) === 0 && (
+                <div style={{
+                  position: 'absolute', top: '8px', left: '8px',
+                  background: 'rgba(34,197,94,.2)', border: '1px solid rgba(34,197,94,.5)',
+                  color: '#22c55e', fontFamily: 'var(--font-m)', fontSize: '9px',
+                  padding: '2px 7px', letterSpacing: '.08em',
+                }}>GRÁTIS</div>
+              )}
+              {curso.progresso === 100 && (
+                <div style={{
+                  position: 'absolute', top: '8px', right: '8px',
+                  background: 'rgba(91,200,255,.15)', border: '1px solid rgba(91,200,255,.4)',
+                  color: 'var(--cy)', fontFamily: 'var(--font-m)', fontSize: '9px',
+                  padding: '2px 7px', letterSpacing: '.08em',
+                }}>CONCLUÍDO</div>
+              )}
+
+              {/* Overlay bloqueado */}
+              {!curso.temAcesso && Number(curso.price) > 0 && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'rgba(0,0,0,.5)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                }}>
+                  <span style={{ fontSize: '32px', lineHeight: 1 }}>🔒</span>
+                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '13px', color: 'var(--mg)', letterSpacing: '.04em' }}>
+                    R$ {Number(curso.price).toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+              )}
+
+              {/* Info overlay inferior */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 12px' }}>
+                <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.12em', marginBottom: '3px' }}>// CURSO</div>
+                <div style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', lineHeight: 1.3, color: '#fff', marginBottom: '6px' }}>
                   {curso.title}
                 </div>
-                {!curso.temAcesso && Number(curso.price) > 0 && (
-                  <div style={{
-                    fontFamily: 'var(--font-h)', fontSize: '13px', fontWeight: 700,
-                    color: 'var(--mg)', letterSpacing: '.04em', marginBottom: '6px',
-                  }}>
-                    🔒 R$ {Number(curso.price).toFixed(2).replace('.', ',')}
-                  </div>
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-m)', fontSize: '10px', color: 'rgba(255,255,255,.6)', marginBottom: '4px' }}>
                   <span>{curso.concluidas}/{curso.total} aulas</span>
                   <span style={{ color: 'var(--cy)' }}>{curso.progresso}%</span>
                 </div>
