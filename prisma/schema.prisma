@@ -79,6 +79,7 @@ model Course {
   price              Decimal @db.Decimal(10, 2)
   isSubscriptionOnly Boolean @default(false) @map("is_subscription_only")
   published          Boolean @default(false)
+  skill              String? // categoria do radar de habilidades
   kiwifyProductId    String? @map("kiwify_product_id")
   kiwifyPlanId       String? @map("kiwify_plan_id")
   kiwifyCheckoutUrl  String? @map("kiwify_checkout_url")
