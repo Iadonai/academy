@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { CursosGrid } from '@/components/dashboard/CursosGrid'
 
 async function buscarFrase(): Promise<{ texto: string; autor: string } | null> {
   try {
@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   // Busca todos os cursos publicados
   const todosCursos = await prisma.course.findMany({
     where: { published: true },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
     select: { id: true, title: true, description: true, thumbnailUrl: true, price: true, kiwifyCheckoutUrl: true, _count: { select: { modules: true } } },
   })
 
@@ -132,76 +132,10 @@ export default async function DashboardPage() {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
-          {cursosComProgresso.map((curso) => (
-            <Link key={curso.id} href={`/cursos/${curso.id}`} className="course-card" style={{ opacity: curso.temAcesso ? 1 : 0.85, position: 'relative', overflow: 'hidden', aspectRatio: '16/10', display: 'block' }}>
-              {/* Capa full */}
-              {curso.thumbnailUrl ? (
-                <img src={curso.thumbnailUrl} alt={curso.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{
-                  position: 'absolute', inset: 0, background: 'var(--s3)',
-                  backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 9px,rgba(91,200,255,.03) 9px,rgba(91,200,255,.03) 10px),repeating-linear-gradient(90deg,transparent,transparent 9px,rgba(91,200,255,.03) 9px,rgba(91,200,255,.03) 10px)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '48px', color: 'var(--cy)', opacity: .3 }}>
-                    {curso.title.charAt(0)}
-                  </span>
-                </div>
-              )}
-
-              {/* Gradiente inferior */}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.3) 50%, transparent 100%)' }} />
-
-              {/* Badge topo esquerdo */}
-              {Number(curso.price) === 0 && (
-                <div style={{
-                  position: 'absolute', top: '8px', left: '8px',
-                  background: 'rgba(34,197,94,.2)', border: '1px solid rgba(34,197,94,.5)',
-                  color: '#22c55e', fontFamily: 'var(--font-m)', fontSize: '9px',
-                  padding: '2px 7px', letterSpacing: '.08em',
-                }}>GRÁTIS</div>
-              )}
-              {curso.progresso === 100 && (
-                <div style={{
-                  position: 'absolute', top: '8px', right: '8px',
-                  background: 'rgba(91,200,255,.15)', border: '1px solid rgba(91,200,255,.4)',
-                  color: 'var(--cy)', fontFamily: 'var(--font-m)', fontSize: '9px',
-                  padding: '2px 7px', letterSpacing: '.08em',
-                }}>CONCLUÍDO</div>
-              )}
-
-              {/* Overlay bloqueado */}
-              {!curso.temAcesso && Number(curso.price) > 0 && (
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'rgba(0,0,0,.5)',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                }}>
-                  <span style={{ fontSize: '32px', lineHeight: 1 }}>🔒</span>
-                  <span style={{ fontFamily: 'var(--font-h)', fontSize: '13px', color: 'var(--mg)', letterSpacing: '.04em' }}>
-                    R$ {Number(curso.price).toFixed(2).replace('.', ',')}
-                  </span>
-                </div>
-              )}
-
-              {/* Info overlay inferior */}
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 12px' }}>
-                <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.12em', marginBottom: '3px' }}>// CURSO</div>
-                <div style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', lineHeight: 1.3, color: '#fff', marginBottom: '6px' }}>
-                  {curso.title}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-m)', fontSize: '10px', color: 'rgba(255,255,255,.6)', marginBottom: '4px' }}>
-                  <span>{curso.concluidas}/{curso.total} aulas</span>
-                  <span style={{ color: 'var(--cy)' }}>{curso.progresso}%</span>
-                </div>
-                <div className="prog-track">
-                  <div className="prog-fill" style={{ width: `${curso.progresso}%` }} />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <CursosGrid
+          cursos={cursosComProgresso.map((c) => ({ ...c, price: String(c.price) }))}
+          isAdmin={isAdmin}
+        />
       )}
     </div>
   )
