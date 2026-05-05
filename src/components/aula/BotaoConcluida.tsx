@@ -26,6 +26,10 @@ export function BotaoConcluida({ concluida, lessonId, cursoId }: Props) {
     startTransition(async () => {
       if (novoEstado) {
         await marcarConcluida(formData)
+        if (typeof window !== 'undefined') {
+          window.dataLayer = window.dataLayer || []
+          window.dataLayer.push({ event: 'lesson_complete', lesson_id: lessonId, course_id: cursoId })
+        }
       } else {
         await desmarcarConcluida(formData)
       }

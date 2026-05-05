@@ -18,7 +18,7 @@ export async function login(formData: FormData) {
     redirect('/login?erro=credenciais-invalidas')
   }
 
-  redirect('/dashboard')
+  redirect('/dashboard?_ev=login')
 }
 
 export async function cadastro(formData: FormData) {

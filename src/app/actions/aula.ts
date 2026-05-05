@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { concederXP } from '@/lib/xp'
+import { sendCAPIEvent } from '@/lib/capi'
 
 async function getUser() {
   const supabase = await createClient()
@@ -29,7 +30,7 @@ export async function marcarConcluida(formData: FormData) {
   // Verificar se completou o módulo
   const aula = await prisma.lesson.findUnique({
     where: { id: lessonId },
-    select: { moduleId: true, module: { select: { courseId: true, lessons: { select: { id: true } } } } },
+    select: { title: true, moduleId: true, module: { select: { courseId: true, lessons: { select: { id: true } } } } },
   })
 
   if (aula) {
@@ -53,6 +54,19 @@ export async function marcarConcluida(formData: FormData) {
     if (concluidasCurso === todasIds.length) {
       await concederXP(user.id, `curso_concluido_${aula.module.courseId}`, 100)
     }
+  }
+
+  // Meta CAPI ViewContent — best-effort, não bloqueia
+  const userRecord = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { email: true, name: true },
+  })
+  if (userRecord) {
+    sendCAPIEvent(
+      'ViewContent',
+      { email: userRecord.email, firstName: userRecord.name?.split(' ')[0] },
+      { content_name: aula?.title, content_type: 'lesson', content_ids: [lessonId] }
+    ).catch(() => {})
   }
 
   revalidatePath(`/cursos/${cursoId}/aulas/${lessonId}`)

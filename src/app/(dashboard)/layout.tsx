@@ -1,8 +1,10 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logout } from '@/app/actions/auth'
+import { EventTracker } from '@/components/EventTracker'
 
 const TICKER_ITEMS = [
   'IADONAI ACADEMY // SISTEMA ONLINE',
@@ -94,6 +96,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </nav>
 
+      <Suspense fallback={null}>
+        <EventTracker />
+      </Suspense>
       <main>{children}</main>
     </div>
   )
