@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { editarPerfil } from '@/app/actions/perfil'
+import { editarPerfil, trocarSenha } from '@/app/actions/perfil'
 import { RadarHabilidades } from '@/components/perfil/RadarHabilidades'
 
 // Mapeia palavras-chave do título do curso para habilidades
@@ -14,7 +14,8 @@ const SKILL_MAP: { skill: string; cor: string; keywords: string[] }[] = [
   { skill: 'Negócios', cor: '#ef4444', keywords: ['negocio', 'negócio', 'gestao', 'gestão', 'marketing', 'vendas'] },
 ]
 
-export default async function PerfilPage() {
+export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ salvo?: string; senha?: string; erro?: string }> }) {
+  const params = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -143,8 +144,14 @@ export default async function PerfilPage() {
       )}
 
       {/* Formulário de edição */}
-      <div className="punk-card" style={{ padding: '18px' }}>
+      <div className="punk-card" style={{ padding: '18px', marginBottom: '16px' }}>
         <div className="section-title" style={{ fontFamily: 'var(--font-h)', fontSize: '11px', letterSpacing: '.12em', marginBottom: '16px' }}>// EDITAR PERFIL</div>
+
+        {params.salvo && (
+          <p style={{ fontFamily: 'var(--font-m)', fontSize: '12px', color: '#22c55e', marginBottom: '12px', letterSpacing: '.04em' }}>
+            ✓ Perfil atualizado com sucesso.
+          </p>
+        )}
 
         <form action={editarPerfil} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Foto */}
@@ -180,6 +187,68 @@ export default async function PerfilPage() {
 
           <button type="submit" className="btn-punk" style={{ alignSelf: 'flex-start', marginTop: '4px' }}>
             SALVAR ALTERAÇÕES
+          </button>
+        </form>
+      </div>
+
+      {/* Trocar senha */}
+      <div className="punk-card" style={{ padding: '18px' }}>
+        <div className="section-title" style={{ fontFamily: 'var(--font-h)', fontSize: '11px', letterSpacing: '.12em', marginBottom: '16px' }}>// TROCAR SENHA</div>
+
+        {params.senha === 'alterada' && (
+          <p style={{ fontFamily: 'var(--font-m)', fontSize: '12px', color: '#22c55e', marginBottom: '12px', letterSpacing: '.04em' }}>
+            ✓ Senha alterada com sucesso.
+          </p>
+        )}
+        {params.erro === 'senhas-diferentes' && (
+          <p style={{ fontFamily: 'var(--font-m)', fontSize: '12px', color: '#ef4444', marginBottom: '12px', letterSpacing: '.04em' }}>
+            As senhas não coincidem.
+          </p>
+        )}
+        {params.erro === 'senha-curta' && (
+          <p style={{ fontFamily: 'var(--font-m)', fontSize: '12px', color: '#ef4444', marginBottom: '12px', letterSpacing: '.04em' }}>
+            A senha deve ter pelo menos 6 caracteres.
+          </p>
+        )}
+        {params.erro === 'senha-falhou' && (
+          <p style={{ fontFamily: 'var(--font-m)', fontSize: '12px', color: '#ef4444', marginBottom: '12px', letterSpacing: '.04em' }}>
+            Não foi possível alterar a senha. Tente novamente.
+          </p>
+        )}
+
+        <form action={trocarSenha} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div>
+            <label style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--cy)', letterSpacing: '.08em', display: 'block', marginBottom: '6px' }}>
+              NOVA SENHA
+            </label>
+            <input
+              name="nova_senha"
+              type="password"
+              required
+              minLength={6}
+              placeholder="Mínimo 6 caracteres"
+              className="punk-textarea"
+              style={{ border: '1px solid var(--bdr)', borderBottom: '1px solid var(--cy)', padding: '10px 12px', fontSize: '13px', width: '100%' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--cy)', letterSpacing: '.08em', display: 'block', marginBottom: '6px' }}>
+              CONFIRMAR NOVA SENHA
+            </label>
+            <input
+              name="confirmar_senha"
+              type="password"
+              required
+              minLength={6}
+              placeholder="Repita a nova senha"
+              className="punk-textarea"
+              style={{ border: '1px solid var(--bdr)', borderBottom: '1px solid var(--cy)', padding: '10px 12px', fontSize: '13px', width: '100%' }}
+            />
+          </div>
+
+          <button type="submit" className="btn-punk" style={{ alignSelf: 'flex-start', marginTop: '4px' }}>
+            ALTERAR SENHA
           </button>
         </form>
       </div>
