@@ -9,13 +9,21 @@ export async function login(formData: FormData) {
   const password = formData.get('password') as string
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
     if (error.message.toLowerCase().includes('email not confirmed')) {
       redirect('/login?erro=email-nao-confirmado')
     }
     redirect('/login?erro=credenciais-invalidas')
+  }
+
+  if (data.user && process.env.N8N_WEBHOOK_BASE_URL) {
+    fetch(`${process.env.N8N_WEBHOOK_BASE_URL}/webhook/boas-vindas-whatsapp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: data.user.email, userId: data.user.id }),
+    }).catch(() => {})
   }
 
   redirect('/dashboard?_ev=login')
