@@ -65,9 +65,14 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
   return (
     <div style={{ maxWidth: '860px', margin: '0 auto', padding: '32px 20px' }}>
 
+      <style>{`
+        .curso-breadcrumb:hover { color: rgba(255,255,255,.7) !important; }
+        .curso-aula-row:hover { background: rgba(91,200,255,.05) !important; }
+      `}</style>
+
       {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
-        <Link href="/dashboard" style={{ color: 'rgba(255,255,255,.35)', fontSize: '13px', textDecoration: 'none' }}>
+        <Link href="/dashboard" className="curso-breadcrumb" style={{ color: 'rgba(255,255,255,.35)', fontSize: '13px', textDecoration: 'none' }}>
           ← Início
         </Link>
         {perfil?.role === 'ADMIN' && (
@@ -221,14 +226,13 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
                   <Link
                     key={aula.id}
                     href={`/cursos/${cursoId}/aulas/${aula.id}`}
+                    className="curso-aula-row"
                     style={{
                       display: 'flex', alignItems: 'center', gap: '14px',
                       padding: '13px 20px', textDecoration: 'none',
                       borderBottom: idx < modulo.lessons.length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none',
-                      background: 'transparent', transition: 'background .15s',
+                      transition: 'background .15s',
                     }}
-                    onMouseOver={e => (e.currentTarget.style.background = 'rgba(91,200,255,.05)')}
-                    onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
                   >
                     <div style={{
                       width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
