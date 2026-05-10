@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Orbitron, Rajdhani, Share_Tech_Mono } from 'next/font/google'
 import Script from 'next/script'
+import NextTopLoader from 'nextjs-toploader'
 import './globals.css'
 
 const orbitron = Orbitron({
@@ -41,6 +42,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }}
       />
       <body className="min-h-full antialiased">
+        <NextTopLoader color="#5bc8ff" height={3} showSpinner={false} />
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-PMFF3N58"
