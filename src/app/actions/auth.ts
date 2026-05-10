@@ -19,11 +19,21 @@ export async function login(formData: FormData) {
   }
 
   if (data.user && process.env.N8N_WEBHOOK_BASE_URL) {
-    fetch(`${process.env.N8N_WEBHOOK_BASE_URL}/webhook/boas-vindas-whatsapp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: data.user.email, userId: data.user.id }),
-    }).catch(() => {})
+    const usuario = await prisma.user.findUnique({
+      where: { id: data.user.id },
+      select: { welcomeSentAt: true },
+    })
+    if (usuario && !usuario.welcomeSentAt) {
+      fetch(`${process.env.N8N_WEBHOOK_BASE_URL}/webhook/boas-vindas-whatsapp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.user.email, userId: data.user.id }),
+      }).catch(() => {})
+      await prisma.user.update({
+        where: { id: data.user.id },
+        data: { welcomeSentAt: new Date() },
+      })
+    }
   }
 
   redirect('/dashboard?_ev=login')
