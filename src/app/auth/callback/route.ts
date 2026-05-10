@@ -12,18 +12,30 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
-      // Cria o usuario no banco se ainda nao existir
       const exists = await prisma.user.findUnique({ where: { id: data.user.id } })
       if (!exists) {
-        await prisma.user.create({
-          data: {
-            id: data.user.id,
-            email: data.user.email!,
-            name: data.user.user_metadata?.full_name ?? data.user.email!,
-            avatarUrl: data.user.user_metadata?.avatar_url ?? null,
-            status: 'ACTIVE',
-          },
-        })
+        // Verifica se já existe pelo email (ex: criado pelo Kiwify com outro UUID)
+        const existsByEmail = await prisma.user.findUnique({ where: { email: data.user.email! } })
+        if (existsByEmail) {
+          // Atualiza avatar/nome com dados do Google sem mudar o ID
+          await prisma.user.update({
+            where: { email: data.user.email! },
+            data: {
+              avatarUrl: data.user.user_metadata?.avatar_url ?? existsByEmail.avatarUrl,
+              name: data.user.user_metadata?.full_name ?? existsByEmail.name,
+            },
+          })
+        } else {
+          await prisma.user.create({
+            data: {
+              id: data.user.id,
+              email: data.user.email!,
+              name: data.user.user_metadata?.full_name ?? data.user.email!,
+              avatarUrl: data.user.user_metadata?.avatar_url ?? null,
+              status: 'ACTIVE',
+            },
+          })
+        }
       }
 
       return NextResponse.redirect(`${origin}${next}`)
