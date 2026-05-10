@@ -119,7 +119,7 @@ export async function recuperarSenha(formData: FormData) {
 
   const supabase = await createClient()
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/nova-senha`,
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/nova-senha`,
   })
 
   redirect('/recuperar-senha?enviado=true')

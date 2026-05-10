@@ -25,13 +25,19 @@ export default async function AulaPage({
   })
 
   if (perfil?.role !== 'ADMIN') {
-    const acesso = await prisma.courseAccess.findFirst({
-      where: { userId: user.id, courseId: cursoId },
+    const cursoDados = await prisma.course.findUnique({
+      where: { id: cursoId },
+      select: { price: true },
     })
-    const assinatura = await prisma.subscription.findFirst({
-      where: { userId: user.id, status: 'ACTIVE' },
-    })
-    if (!acesso && !assinatura) redirect('/dashboard')
+    if (Number(cursoDados?.price) !== 0) {
+      const acesso = await prisma.courseAccess.findFirst({
+        where: { userId: user.id, courseId: cursoId },
+      })
+      const assinatura = await prisma.subscription.findFirst({
+        where: { userId: user.id, status: 'ACTIVE' },
+      })
+      if (!acesso && !assinatura) redirect('/bloqueado')
+    }
   }
 
   const [aula, progresses, nota] = await Promise.all([

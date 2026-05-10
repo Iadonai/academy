@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const next = searchParams.get('next') ?? '/dashboard?_ev=login'
 
   if (code) {
     const supabase = await createClient()
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
         })
       }
 
-      return NextResponse.redirect(`${origin}/dashboard?_ev=login`)
+      return NextResponse.redirect(`${origin}${next}`)
     }
   }
 
