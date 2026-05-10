@@ -125,17 +125,25 @@ export async function recuperarSenha(formData: FormData) {
   redirect('/recuperar-senha?enviado=true')
 }
 
-export async function novaSenha(formData: FormData) {
+export async function novaSenha(_: unknown, formData: FormData) {
   const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
+
+  if (password !== confirmPassword) {
+    return { erro: 'As senhas não coincidem. Tente novamente.' }
+  }
+  if (password.length < 6) {
+    return { erro: 'A senha deve ter pelo menos 6 caracteres.' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase.auth.updateUser({ password })
 
   if (error) {
-    redirect('/auth/nova-senha?erro=falhou')
+    return { erro: 'Não foi possível atualizar a senha. O link pode ter expirado — solicite um novo.' }
   }
 
-  redirect('/dashboard')
+  return { sucesso: true }
 }
 
 export async function logout() {
