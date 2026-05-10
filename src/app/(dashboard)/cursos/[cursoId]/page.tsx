@@ -63,114 +63,205 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
   const progresso = totalAulas > 0 ? Math.round((aulasCompletas / totalAulas) * 100) : 0
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/dashboard" className="text-sm text-slate-500 hover:text-slate-700">
+    <div style={{ maxWidth: '860px', margin: '0 auto', padding: '32px 20px' }}>
+
+      {/* Breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
+        <Link href="/dashboard" style={{ color: 'rgba(255,255,255,.35)', fontSize: '13px', textDecoration: 'none' }}>
           ← Início
         </Link>
         {perfil?.role === 'ADMIN' && (
           <>
-            <span className="text-slate-300">/</span>
-            <Link
-              href={`/admin/cursos/${cursoId}/modulos`}
-              className="text-sm text-blue-600 hover:underline"
-            >
+            <span style={{ color: 'rgba(255,255,255,.15)', fontSize: '13px' }}>/</span>
+            <Link href={`/admin/cursos/${cursoId}/modulos`} style={{ color: '#5bc8ff', fontSize: '13px', textDecoration: 'none' }}>
               Editar no admin
             </Link>
           </>
         )}
       </div>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">{curso.title}</h1>
-        <p className="text-slate-500">{curso.description}</p>
+      {/* Hero */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(91,200,255,.08) 0%, rgba(167,139,250,.06) 100%)',
+        border: '1px solid rgba(255,255,255,.07)',
+        borderRadius: '16px',
+        padding: '32px',
+        marginBottom: '24px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: '-60px', right: '-60px',
+          width: '200px', height: '200px',
+          background: 'radial-gradient(ellipse, rgba(167,139,250,.15) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+
+        <span style={{
+          display: 'inline-block',
+          background: Number(curso.price) === 0 ? 'rgba(91,200,255,.12)' : 'rgba(167,139,250,.12)',
+          border: `1px solid ${Number(curso.price) === 0 ? 'rgba(91,200,255,.25)' : 'rgba(167,139,250,.25)'}`,
+          borderRadius: '20px', padding: '3px 12px', fontSize: '11px',
+          color: Number(curso.price) === 0 ? '#5bc8ff' : '#a78bfa',
+          fontFamily: 'var(--font-mono, monospace)', letterSpacing: '.06em',
+          marginBottom: '14px',
+        }}>
+          {Number(curso.price) === 0 ? 'GRATUITO' : 'PREMIUM'}
+        </span>
+
+        <h1 style={{
+          fontSize: '22px', fontWeight: 700, color: '#fff',
+          lineHeight: 1.35, marginBottom: '10px',
+          fontFamily: 'var(--font-h, sans-serif)',
+        }}>{curso.title}</h1>
+
+        {curso.description && (
+          <p style={{ color: 'rgba(255,255,255,.45)', fontSize: '13px', lineHeight: 1.7, marginBottom: '20px' }}>
+            {curso.description}
+          </p>
+        )}
 
         {totalAulas > 0 && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-sm text-slate-500 mb-1">
-              <span>{aulasCompletas} de {totalAulas} aulas concluídas</span>
-              <span>{progresso}%</span>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,.4)' }}>
+                {aulasCompletas} de {totalAulas} aulas concluídas
+              </span>
+              <span style={{
+                fontSize: '12px', fontWeight: 700,
+                color: progresso === 100 ? '#5bc8ff' : 'rgba(255,255,255,.5)',
+                fontFamily: 'var(--font-mono, monospace)',
+              }}>{progresso}%</span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600 rounded-full transition-all"
-                style={{ width: `${progresso}%` }}
-              />
+            <div style={{ height: '5px', background: 'rgba(255,255,255,.06)', borderRadius: '99px', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: '99px',
+                background: progresso === 100
+                  ? 'linear-gradient(90deg, #5bc8ff, #a78bfa)'
+                  : 'linear-gradient(90deg, #5bc8ff, #38bdf8)',
+                width: `${progresso}%`,
+                transition: 'width .4s ease',
+              }} />
             </div>
             {progresso === 100 && temAcesso && (
-              <BotaoCertificado cursoId={cursoId} />
+              <div style={{ marginTop: '16px' }}>
+                <BotaoCertificado cursoId={cursoId} />
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Sem acesso — mostra botão de compra */}
+      {/* Banner de compra */}
       {!temAcesso && (
         <div style={{
-          background: 'var(--s2)', border: '1px solid var(--bdr)', borderTop: '2px solid var(--cy)',
-          padding: '24px', marginBottom: '24px', textAlign: 'center',
+          background: 'rgba(167,139,250,.07)',
+          border: '1px solid rgba(167,139,250,.2)',
+          borderRadius: '12px', padding: '28px',
+          marginBottom: '24px', textAlign: 'center',
         }}>
-          <div style={{ fontFamily: 'var(--font-h)', fontSize: '13px', color: 'var(--cy)', letterSpacing: '.08em', marginBottom: '8px' }}>
-            // ACESSO NECESSÁRIO
+          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,.4)', marginBottom: '4px' }}>
+            Acesso necessário
           </div>
-          <div style={{ fontFamily: 'var(--font-m)', fontSize: '13px', color: 'var(--mt)', marginBottom: '16px' }}>
-            Adquira este curso para assistir às aulas.
+          <div style={{ fontSize: '30px', fontWeight: 800, color: '#fff', marginBottom: '16px', fontFamily: 'var(--font-h, sans-serif)' }}>
+            R$ {Number(curso.price).toFixed(2).replace('.', ',')}
           </div>
           {curso.kiwifyCheckoutUrl ? (
             <a
               href={curso.kiwifyCheckoutUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-punk"
-              style={{ display: 'inline-block', textDecoration: 'none' }}
+              style={{
+                display: 'inline-block',
+                background: 'linear-gradient(135deg, #5bc8ff, #a78bfa)',
+                borderRadius: '8px', padding: '11px 32px',
+                color: '#06040e', fontWeight: 700, fontSize: '14px',
+                textDecoration: 'none',
+              }}
             >
-              COMPRAR — R$ {Number(curso.price).toFixed(2).replace('.', ',')}
+              Comprar acesso
             </a>
           ) : (
-            <div style={{ fontFamily: 'var(--font-m)', fontSize: '12px', color: 'var(--mt)' }}>
-              Entre em contato com o administrador para obter acesso.
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,.3)' }}>
+              Entre em contato com o administrador.
             </div>
           )}
         </div>
       )}
 
-      <div className="space-y-4" style={{ opacity: temAcesso ? 1 : 0.4, pointerEvents: temAcesso ? 'auto' : 'none' }}>
+      {/* Módulos */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: '10px',
+        opacity: temAcesso ? 1 : 0.45,
+        pointerEvents: temAcesso ? 'auto' : 'none',
+      }}>
         {curso.modules.map((modulo) => (
-          <div key={modulo.id} className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-            <div className="px-5 py-4 bg-slate-50 border-b border-slate-200">
-              <h2 className="font-semibold text-slate-800">{modulo.title}</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+          <div key={modulo.id} style={{
+            background: 'rgba(255,255,255,.03)',
+            border: '1px solid rgba(255,255,255,.07)',
+            borderRadius: '12px', overflow: 'hidden',
+          }}>
+            <div style={{
+              padding: '14px 20px',
+              borderBottom: '1px solid rgba(255,255,255,.05)',
+              background: 'rgba(255,255,255,.02)',
+            }}>
+              <div style={{ fontWeight: 600, color: 'rgba(255,255,255,.85)', fontSize: '14px' }}>
+                {modulo.title}
+              </div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.3)', marginTop: '2px', fontFamily: 'var(--font-mono, monospace)' }}>
                 {modulo.lessons.length} aula{modulo.lessons.length !== 1 ? 's' : ''}
-              </p>
+              </div>
             </div>
-            <ul className="divide-y divide-slate-100">
-              {modulo.lessons.map((aula) => {
+
+            <div>
+              {modulo.lessons.map((aula, idx) => {
                 const concluida = aula.lessonProgresses.length > 0
                 return (
-                  <li key={aula.id}>
-                    <Link
-                      href={`/cursos/${cursoId}/aulas/${aula.id}`}
-                      className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors"
-                    >
-                      <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        concluida
-                          ? 'border-blue-600 bg-blue-600'
-                          : 'border-slate-300'
-                      }`}>
-                        {concluida && (
-                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </span>
-                      <span className={`text-sm ${concluida ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
-                        {aula.title}
-                      </span>
-                    </Link>
-                  </li>
+                  <Link
+                    key={aula.id}
+                    href={`/cursos/${cursoId}/aulas/${aula.id}`}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '14px',
+                      padding: '13px 20px', textDecoration: 'none',
+                      borderBottom: idx < modulo.lessons.length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none',
+                      background: 'transparent', transition: 'background .15s',
+                    }}
+                    onMouseOver={e => (e.currentTarget.style.background = 'rgba(91,200,255,.05)')}
+                    onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <div style={{
+                      width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: concluida ? 'linear-gradient(135deg, #5bc8ff, #38bdf8)' : 'rgba(255,255,255,.06)',
+                      border: concluida ? 'none' : '1.5px solid rgba(255,255,255,.12)',
+                    }}>
+                      {concluida ? (
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#06040e" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="rgba(255,255,255,.4)" stroke="none">
+                          <polygon points="5,3 19,12 5,21" />
+                        </svg>
+                      )}
+                    </div>
+
+                    <span style={{
+                      fontSize: '13px', flex: 1,
+                      color: concluida ? 'rgba(255,255,255,.3)' : 'rgba(255,255,255,.75)',
+                      textDecoration: concluida ? 'line-through' : 'none',
+                    }}>
+                      {aula.title}
+                    </span>
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </Link>
                 )
               })}
-            </ul>
+            </div>
           </div>
         ))}
       </div>
