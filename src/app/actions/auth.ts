@@ -125,6 +125,27 @@ export async function recuperarSenha(formData: FormData) {
   redirect('/recuperar-senha?enviado=true')
 }
 
+export async function verificarOtp(_: unknown, formData: FormData) {
+  const tokenHash = formData.get('token_hash') as string
+  const type      = formData.get('type') as string
+
+  if (!tokenHash) {
+    return { erro: 'Link inválido. Solicite um novo link de recuperação.' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.verifyOtp({
+    token_hash: tokenHash,
+    type: type as 'recovery',
+  })
+
+  if (error) {
+    return { erro: 'Link inválido ou expirado. Solicite um novo link de recuperação.' }
+  }
+
+  redirect('/auth/nova-senha')
+}
+
 export async function novaSenha(_: unknown, formData: FormData) {
   const password = formData.get('password') as string
   const confirmPassword = formData.get('confirmPassword') as string
