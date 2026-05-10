@@ -1,14 +1,11 @@
-'use client'
+import { ConfirmarForm } from './ConfirmarForm'
 
-import { useActionState } from 'react'
-import { verificarOtp } from '@/app/actions/auth'
-
-export default function ConfirmarPage({
+export default async function ConfirmarPage({
   searchParams,
 }: {
   searchParams: Promise<{ token_hash?: string; type?: string }>
 }) {
-  const [state, action, pending] = useActionState(verificarOtp, null)
+  const { token_hash, type } = await searchParams
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: '#06040e', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
@@ -27,14 +24,7 @@ export default function ConfirmarPage({
           <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '13px', marginBottom: '20px' }}>
             Clique no botão abaixo para continuar e criar sua nova senha.
           </p>
-
-          {state?.erro && (
-            <div style={{ background: 'rgba(239,68,68,.15)', border: '1px solid rgba(239,68,68,.3)', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', color: '#fca5a5', marginBottom: '16px' }}>
-              {state.erro}
-            </div>
-          )}
-
-          <TokenForm action={action} pending={pending} searchParams={searchParams} />
+          <ConfirmarForm tokenHash={token_hash} type={type} />
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '16px', fontFamily: 'monospace', fontSize: '10px', color: 'rgba(150,100,255,.3)', letterSpacing: '.1em' }}>
@@ -42,39 +32,5 @@ export default function ConfirmarPage({
         </div>
       </div>
     </div>
-  )
-}
-
-async function TokenForm({
-  action,
-  pending,
-  searchParams,
-}: {
-  action: (payload: FormData) => void
-  pending: boolean
-  searchParams: Promise<{ token_hash?: string; type?: string }>
-}) {
-  const { token_hash, type } = await searchParams
-
-  if (!token_hash) {
-    return (
-      <p style={{ color: '#fca5a5', fontSize: '13px' }}>
-        Link inválido. Solicite um novo link de recuperação de senha.
-      </p>
-    )
-  }
-
-  return (
-    <form action={action}>
-      <input type="hidden" name="token_hash" value={token_hash} />
-      <input type="hidden" name="type" value={type ?? 'recovery'} />
-      <button
-        type="submit"
-        disabled={pending}
-        style={{ width: '100%', background: pending ? 'rgba(255,255,255,.1)' : 'linear-gradient(135deg,#5bc8ff,#a78bfa)', border: 'none', borderRadius: '6px', padding: '11px', color: pending ? 'rgba(255,255,255,.4)' : '#06040e', fontWeight: 700, fontSize: '14px', cursor: pending ? 'not-allowed' : 'pointer' }}
-      >
-        {pending ? 'Verificando...' : 'Confirmar e criar nova senha'}
-      </button>
-    </form>
   )
 }
