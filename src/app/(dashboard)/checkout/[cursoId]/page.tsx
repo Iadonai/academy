@@ -25,8 +25,17 @@ export default function CheckoutPage() {
     fetch(`/api/checkout/${cursoId}/info`)
       .then(r => r.json())
       .then((data: InfoCheckout) => {
+        if (!data.id) {
+          setErro('Erro ao carregar curso. Tente novamente.')
+          setInfo({ id: cursoId, title: '', price: '0', thumbnailUrl: null, email: '', cpfCnpj: '' })
+          return
+        }
         setInfo(data)
         if (data.cpfCnpj) setCpf(formatarCpf(data.cpfCnpj))
+      })
+      .catch(() => {
+        setErro('Erro ao carregar. Tente novamente.')
+        setInfo({ id: cursoId, title: '...', price: '0', thumbnailUrl: null, email: '', cpfCnpj: '' })
       })
   }, [cursoId])
 
