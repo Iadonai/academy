@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -156,6 +156,7 @@ function CardCurso({ curso, isAdmin }: { curso: Curso; isAdmin: boolean }) {
 export function CursosGrid({ cursos: inicial, isAdmin }: { cursos: Curso[]; isAdmin: boolean }) {
   const [cursos, setCursos] = useState(inicial)
   const [salvando, setSalvando] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -182,15 +183,67 @@ export function CursosGrid({ cursos: inicial, isAdmin }: { cursos: Curso[]; isAd
     salvarOrdem(nova)
   }
 
-  const grid = (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '14px' }}>
-      {cursos.map((curso) => (
-        <CardCurso key={curso.id} curso={curso} isAdmin={isAdmin} />
-      ))}
+  function scrollBy(dir: 'left' | 'right') {
+    scrollRef.current?.scrollBy({ left: dir === 'right' ? 520 : -520, behavior: 'smooth' })
+  }
+
+  const cards = cursos.map((curso) => (
+    <CardCurso key={curso.id} curso={curso} isAdmin={isAdmin} />
+  ))
+
+  const prateleira = (
+    <div style={{ position: 'relative' }}>
+      {/* Seta esquerda */}
+      <button
+        onClick={() => scrollBy('left')}
+        style={{
+          position: 'absolute', left: -16, top: '50%', transform: 'translateY(-50%)',
+          zIndex: 10, width: 36, height: 36, borderRadius: '50%',
+          background: 'rgba(10,7,24,.9)', border: '1px solid rgba(91,200,255,.3)',
+          color: 'var(--cy)', fontSize: 16, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background .2s, border-color .2s',
+          boxShadow: '0 4px 16px rgba(0,0,0,.4)',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,200,255,.15)'; e.currentTarget.style.borderColor = 'var(--cy)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(10,7,24,.9)'; e.currentTarget.style.borderColor = 'rgba(91,200,255,.3)' }}
+        aria-label="Anterior"
+      >‹</button>
+
+      {/* Scroll container */}
+      <div
+        ref={scrollRef}
+        style={{
+          display: 'flex', gap: 14, overflowX: 'auto', paddingBottom: 6,
+          scrollbarWidth: 'none', msOverflowStyle: 'none',
+        }}
+      >
+        <style>{`.no-scrollbar::-webkit-scrollbar{display:none}`}</style>
+        {cards.map((card, i) => (
+          <div key={i} style={{ flexShrink: 0, width: 160 }}>{card}</div>
+        ))}
+      </div>
+
+      {/* Seta direita */}
+      <button
+        onClick={() => scrollBy('right')}
+        style={{
+          position: 'absolute', right: -16, top: '50%', transform: 'translateY(-50%)',
+          zIndex: 10, width: 36, height: 36, borderRadius: '50%',
+          background: 'rgba(10,7,24,.9)', border: '1px solid rgba(91,200,255,.3)',
+          color: 'var(--cy)', fontSize: 16, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background .2s, border-color .2s',
+          boxShadow: '0 4px 16px rgba(0,0,0,.4)',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,200,255,.15)'; e.currentTarget.style.borderColor = 'var(--cy)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(10,7,24,.9)'; e.currentTarget.style.borderColor = 'rgba(91,200,255,.3)' }}
+        aria-label="Próximo"
+      >›</button>
     </div>
   )
 
-  if (!isAdmin) return grid
+  if (!isAdmin) return prateleira
 
   return (
     <div>
@@ -201,7 +254,7 @@ export function CursosGrid({ cursos: inicial, isAdmin }: { cursos: Curso[]; isAd
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={cursos.map((c) => c.id)} strategy={rectSortingStrategy}>
-          {grid}
+          {prateleira}
         </SortableContext>
       </DndContext>
     </div>
