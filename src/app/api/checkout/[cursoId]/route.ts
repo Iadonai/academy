@@ -62,8 +62,10 @@ export async function POST(
     successUrl,
   })
 
+  console.log('[checkout] resposta Asaas:', JSON.stringify(cobranca))
+
   if (!cobranca.invoiceUrl) {
-    return NextResponse.json({ error: 'Erro ao gerar cobrança' }, { status: 500 })
+    return NextResponse.json({ error: 'Erro ao gerar cobrança', detalhe: cobranca }, { status: 500 })
   }
 
   return NextResponse.redirect(cobranca.invoiceUrl)
