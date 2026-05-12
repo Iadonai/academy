@@ -140,11 +140,16 @@ export async function criarAula(formData: FormData) {
     select: { order: true },
   })
 
+  const lessonType = (formData.get('lessonType') as string) || 'VIDEO'
+
   await prisma.lesson.create({
     data: {
       moduleId,
       title: formData.get('title') as string,
-      youtubeUrl: formData.get('youtubeUrl') as string,
+      lessonType: lessonType as 'VIDEO' | 'PDF' | 'QUIZ',
+      youtubeUrl: lessonType === 'VIDEO' ? (formData.get('youtubeUrl') as string) || '' : '',
+      contentUrl: lessonType !== 'VIDEO' ? (formData.get('contentUrl') as string) || null : null,
+      duration: (formData.get('duration') as string) || null,
       description: (formData.get('description') as string) || null,
       order: (ultima?.order ?? 0) + 1,
     },
@@ -160,11 +165,16 @@ export async function editarAula(formData: FormData) {
   const moduleId = formData.get('moduleId') as string
   const courseId = formData.get('courseId') as string
 
+  const lessonType = (formData.get('lessonType') as string) || 'VIDEO'
+
   await prisma.lesson.update({
     where: { id },
     data: {
       title: formData.get('title') as string,
-      youtubeUrl: formData.get('youtubeUrl') as string,
+      lessonType: lessonType as 'VIDEO' | 'PDF' | 'QUIZ',
+      youtubeUrl: lessonType === 'VIDEO' ? (formData.get('youtubeUrl') as string) || '' : '',
+      contentUrl: lessonType !== 'VIDEO' ? (formData.get('contentUrl') as string) || null : null,
+      duration: (formData.get('duration') as string) || null,
       description: (formData.get('description') as string) || null,
     },
   })

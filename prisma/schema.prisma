@@ -108,14 +108,23 @@ model Module {
   @@map("modules")
 }
 
+enum LessonType {
+  VIDEO
+  PDF
+  QUIZ
+}
+
 model Lesson {
-  id          String   @id @default(uuid())
-  moduleId    String   @map("module_id")
+  id          String     @id @default(uuid())
+  moduleId    String     @map("module_id")
   title       String
-  youtubeUrl  String   @map("youtube_url")
+  lessonType  LessonType @default(VIDEO) @map("lesson_type")
+  youtubeUrl  String     @default("") @map("youtube_url")
+  contentUrl  String?    @map("content_url")
+  duration    String?
   description String?
   order       Int
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
 
   module           Module              @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   lessonProgresses LessonProgress[]
