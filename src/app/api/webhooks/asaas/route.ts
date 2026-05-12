@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { parseRef } from '@/lib/asaas'
 
+const N8N_BASE = 'https://n8n.iadonaiacademy.com.br/webhook'
+
+async function notificarN8N(path: string, payload: Record<string, unknown>) {
+  try {
+    await fetch(`${N8N_BASE}/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+  } catch {
+    // fire-and-forget — não bloqueia a resposta ao Asaas
+  }
+}
+
 // Eventos que confirmam pagamento efetivado
 const EVENTOS_PAGOS = new Set(['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED'])
 
@@ -48,6 +62,18 @@ export async function POST(request: NextRequest) {
         create: { userId: ref.userId, courseId: ref.courseId, type: 'PURCHASE' },
         update: {},
       })
+
+      const [usuario, curso] = await Promise.all([
+        prisma.user.findUnique({ where: { id: ref.userId }, select: { email: true, name: true } }),
+        prisma.course.findUnique({ where: { id: ref.courseId }, select: { title: true, price: true } }),
+      ])
+      notificarN8N('compra-confirmada', {
+        email: usuario?.email ?? '',
+        nome: usuario?.name ?? '',
+        fone: '',
+        valor: Number(curso?.price ?? 0),
+        produto: curso?.title ?? 'Curso IADONAI',
+      })
     }
 
     if (ref.type === 'subscription') {
@@ -63,6 +89,15 @@ export async function POST(request: NextRequest) {
           status: 'ACTIVE',
           ...(asaasSubscriptionId ? { asaasSubscriptionId } : {}),
         },
+      })
+
+      const usuario = await prisma.user.findUnique({ where: { id: ref.userId }, select: { email: true, name: true } })
+      notificarN8N('compra-confirmada', {
+        email: usuario?.email ?? '',
+        nome: usuario?.name ?? '',
+        fone: '',
+        valor: Number(payment?.value ?? 0),
+        produto: 'Assinatura IADONAI',
       })
     }
   }

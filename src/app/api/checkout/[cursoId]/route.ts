@@ -72,5 +72,18 @@ export async function POST(
     return NextResponse.json({ error: 'Erro ao gerar cobrança', detalhe: cobranca }, { status: 500 })
   }
 
+  // Notifica N8N para enviar lembrete WhatsApp se o pagamento não for concluído
+  fetch('https://n8n.iadonaiacademy.com.br/webhook/pix-gerado', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      nome,
+      fone: '',
+      produto: curso.title,
+      invoiceUrl: cobranca.invoiceUrl,
+    }),
+  }).catch(() => {})
+
   return NextResponse.json({ invoiceUrl: cobranca.invoiceUrl })
 }
