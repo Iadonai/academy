@@ -133,19 +133,27 @@ export async function cancelarAssinatura(asaasSubscriptionId: string): Promise<v
 }
 
 // Monta o externalReference para identificar o pagamento no webhook
-export function buildRef(type: 'course' | 'subscription', userId: string, courseId?: string): string {
-  if (type === 'course' && courseId) return `course:${courseId}:user:${userId}`
+export function buildRef(type: 'course' | 'subscription' | 'order', userId: string, id?: string): string {
+  if (type === 'course' && id) return `course:${id}:user:${userId}`
+  if (type === 'order' && id) return `order:${id}:user:${userId}`
   return `subscription:user:${userId}`
 }
 
 // Parseia o externalReference recebido no webhook
-export function parseRef(ref: string): { type: 'course' | 'subscription'; userId: string; courseId?: string } | null {
+export function parseRef(ref: string): { type: 'course' | 'subscription' | 'order'; userId: string; courseId?: string; orderId?: string } | null {
   if (ref.startsWith('course:')) {
     const parts = ref.split(':')
     const courseId = parts[1]
     const userId = parts[3]
     if (!courseId || !userId) return null
     return { type: 'course', userId, courseId }
+  }
+  if (ref.startsWith('order:')) {
+    const parts = ref.split(':')
+    const orderId = parts[1]
+    const userId = parts[3]
+    if (!orderId || !userId) return null
+    return { type: 'order', userId, orderId }
   }
   if (ref.startsWith('subscription:user:')) {
     const userId = ref.replace('subscription:user:', '')

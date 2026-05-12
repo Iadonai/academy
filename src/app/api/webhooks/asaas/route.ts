@@ -56,6 +56,32 @@ export async function POST(request: NextRequest) {
   if (!ref) return NextResponse.json({ ok: true })
 
   if (EVENTOS_PAGOS.has(evento)) {
+    if (ref.type === 'order' && ref.orderId) {
+      const order = await prisma.order.findUnique({
+        where: { id: ref.orderId },
+        include: { items: true },
+      })
+      if (order) {
+        for (const item of order.items) {
+          await prisma.courseAccess.upsert({
+            where: { userId_courseId: { userId: ref.userId, courseId: item.courseId } },
+            create: { userId: ref.userId, courseId: item.courseId, type: 'PURCHASE' },
+            update: {},
+          })
+        }
+        await prisma.order.update({ where: { id: ref.orderId }, data: { status: 'PAID' } })
+
+        const usuario = await prisma.user.findUnique({ where: { id: ref.userId }, select: { email: true, name: true } })
+        notificarN8N('compra-confirmada', {
+          email: usuario?.email ?? '',
+          nome: usuario?.name ?? '',
+          fone: '',
+          valor: Number(order.total),
+          produto: `${order.items.length} curso${order.items.length > 1 ? 's' : ''} IADONAI`,
+        })
+      }
+    }
+
     if (ref.type === 'course' && ref.courseId) {
       await prisma.courseAccess.upsert({
         where: { userId_courseId: { userId: ref.userId, courseId: ref.courseId } },

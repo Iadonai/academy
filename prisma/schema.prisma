@@ -56,6 +56,7 @@ model User {
   postReplies      PostReply[]
   postLikes        PostLike[]
   invitesSent      Invite[]         @relation("InviteSender")
+  orders           Order[]
 
   @@map("users")
 }
@@ -93,6 +94,7 @@ model Course {
   modules       Module[]
   courseAccesses CourseAccess[]
   certificates   Certificate[]
+  orderItems     OrderItem[]
 
   @@map("courses")
 }
@@ -358,6 +360,36 @@ model PostAttachment {
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("post_attachments")
+}
+
+// ── Carrinho / Ordens ─────────────────────────────────────────────────────────
+
+model Order {
+  id        String  @id @default(uuid())
+  userId    String  @map("user_id")
+  status    String  @default("PENDING") // PENDING | PAID | CANCELLED
+  total     Decimal @db.Decimal(10, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String  @map("order_id")
+  courseId  String  @map("course_id")
+  price     Decimal @db.Decimal(10, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, courseId])
+  @@map("order_items")
 }
 
 model PostReply {
