@@ -11,8 +11,12 @@ const EVENTOS_CANCELADOS = new Set(['PAYMENT_OVERDUE', 'SUBSCRIPTION_DELETED'])
 export async function POST(request: NextRequest) {
   const token = process.env.ASAAS_WEBHOOK_TOKEN
   if (token) {
-    const headerToken = request.headers.get('asaas-access-token')
+    // Asaas envia o token no header 'access_token'
+    const headerToken =
+      request.headers.get('access_token') ??
+      request.headers.get('asaas-access-token')
     if (headerToken !== token) {
+      console.warn('[asaas webhook] token inválido:', headerToken)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
   }
