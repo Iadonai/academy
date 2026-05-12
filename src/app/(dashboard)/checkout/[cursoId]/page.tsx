@@ -1,7 +1,14 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+
+interface BumpCurso {
+  id: string
+  title: string
+  price: string
+  thumbnailUrl: string | null
+}
 
 interface InfoCheckout {
   id: string
@@ -10,6 +17,30 @@ interface InfoCheckout {
   thumbnailUrl: string | null
   email: string
   cpfCnpj: string
+  bumps: BumpCurso[]
+}
+
+function formatarCpf(value: string) {
+  const nums = value.replace(/\D/g, '').slice(0, 11)
+  return nums
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+}
+
+function Thumb({ url, title, size = 56 }: { url: string | null; title: string; size?: number }) {
+  if (url) return (
+    <img src={url} alt={title}
+      style={{ width: size, height: size, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+  )
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: 8, flexShrink: 0,
+      background: 'linear-gradient(135deg, rgba(91,200,255,.15), rgba(167,139,250,.1))',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.4, color: 'var(--cy)', opacity: .5,
+    }}>◈</div>
+  )
 }
 
 export default function CheckoutPage() {
@@ -17,6 +48,7 @@ export default function CheckoutPage() {
   const router = useRouter()
 
   const [info, setInfo] = useState<InfoCheckout | null>(null)
+  const [extras, setExtras] = useState<Set<string>>(new Set())
   const [cpf, setCpf] = useState('')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
@@ -26,8 +58,8 @@ export default function CheckoutPage() {
       .then(r => r.json())
       .then((data: InfoCheckout) => {
         if (!data.id) {
-          setErro('Erro ao carregar curso. Tente novamente.')
-          setInfo({ id: cursoId, title: '', price: '0', thumbnailUrl: null, email: '', cpfCnpj: '' })
+          setErro('Erro ao carregar curso.')
+          setInfo({ id: cursoId, title: '', price: '0', thumbnailUrl: null, email: '', cpfCnpj: '', bumps: [] })
           return
         }
         setInfo(data)
@@ -35,17 +67,24 @@ export default function CheckoutPage() {
       })
       .catch(() => {
         setErro('Erro ao carregar. Tente novamente.')
-        setInfo({ id: cursoId, title: '...', price: '0', thumbnailUrl: null, email: '', cpfCnpj: '' })
+        setInfo({ id: cursoId, title: '...', price: '0', thumbnailUrl: null, email: '', cpfCnpj: '', bumps: [] })
       })
   }, [cursoId])
 
-  function formatarCpf(value: string) {
-    const nums = value.replace(/\D/g, '').slice(0, 11)
-    return nums
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-  }
+  const toggleExtra = useCallback((id: string) => {
+    setExtras(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
+  const totalSelecionados = info
+    ? [info, ...(info.bumps.filter(b => extras.has(b.id)))]
+    : []
+  const total = totalSelecionados.reduce((acc, c) => acc + Number(c.price), 0)
+  const qtd = totalSelecionados.length
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -54,15 +93,25 @@ export default function CheckoutPage() {
       setErro('CPF inválido — preencha os 11 dígitos')
       return
     }
-
     setLoading(true)
     setErro('')
 
-    const res = await fetch(`/api/checkout/${cursoId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cpfCnpj: cpfLimpo }),
-    })
+    let res: Response
+    if (extras.size === 0) {
+      // Só o curso principal — fluxo simples
+      res = await fetch(`/api/checkout/${cursoId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cpfCnpj: cpfLimpo }),
+      })
+    } else {
+      // Múltiplos cursos — usa o carrinho
+      res = await fetch('/api/checkout/carrinho', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cpfCnpj: cpfLimpo, courseIds: [cursoId, ...Array.from(extras)] }),
+      })
+    }
 
     const data = await res.json().catch(() => ({}))
 
@@ -75,8 +124,7 @@ export default function CheckoutPage() {
       return
     }
 
-    const msg = data.detalhe?.errors?.[0]?.description ?? data.error ?? 'Erro ao gerar cobrança'
-    setErro(msg)
+    setErro(data.detalhe?.errors?.[0]?.description ?? data.error ?? 'Erro ao gerar cobrança')
     setLoading(false)
   }
 
@@ -91,8 +139,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: '48px auto', padding: '0 20px' }}>
-
+    <div style={{ maxWidth: 520, margin: '48px auto', padding: '0 20px' }}>
       <button
         onClick={() => router.back()}
         style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.35)', fontSize: 13, cursor: 'pointer', marginBottom: 28, padding: 0 }}
@@ -100,61 +147,111 @@ export default function CheckoutPage() {
         ← Voltar
       </button>
 
-      <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--cy)', letterSpacing: '.14em', marginBottom: 12 }}>
+      <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--cy)', letterSpacing: '.14em', marginBottom: 16 }}>
         // CHECKOUT
       </div>
 
-      {/* Card do curso */}
+      {/* Curso principal — sempre selecionado */}
       <div style={{
-        background: 'rgba(255,255,255,.03)',
-        border: '1px solid rgba(255,255,255,.08)',
-        borderRadius: 12, padding: 20,
-        display: 'flex', gap: 16, alignItems: 'center',
-        marginBottom: 28,
+        background: 'rgba(91,200,255,.06)',
+        border: '1px solid rgba(91,200,255,.25)',
+        borderRadius: 12, padding: '16px 18px',
+        display: 'flex', gap: 14, alignItems: 'center',
+        marginBottom: info.bumps.length > 0 ? 4 : 24,
       }}>
-        {info.thumbnailUrl ? (
-          <img src={info.thumbnailUrl} alt={info.title}
-            style={{ width: 72, height: 72, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-        ) : (
-          <div style={{
-            width: 72, height: 72, borderRadius: 8, flexShrink: 0,
-            background: 'linear-gradient(135deg, rgba(91,200,255,.15), rgba(167,139,250,.1))',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 28, color: 'var(--cy)', opacity: .4,
-          }}>◈</div>
-        )}
-        <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', lineHeight: 1.4, marginBottom: 6 }}>
+        <Thumb url={info.thumbnailUrl} title={info.title} size={52} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 9, fontFamily: 'var(--font-m)', color: '#5bc8ff', letterSpacing: '.1em', marginBottom: 4 }}>
+            ✓ SEU PEDIDO
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
             {info.title}
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-h)' }}>
-            R$ {Number(info.price).toFixed(2).replace('.', ',')}
-          </div>
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-h)', flexShrink: 0 }}>
+          R$ {Number(info.price).toFixed(2).replace('.', ',')}
         </div>
       </div>
 
-      {/* Formulário */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Order bumps */}
+      {info.bumps.length > 0 && (
+        <>
+          <div style={{
+            fontFamily: 'var(--font-m)', fontSize: 9, color: 'rgba(255,255,255,.35)',
+            letterSpacing: '.1em', padding: '14px 0 10px',
+          }}>
+            ADICIONE AO SEU PEDIDO
+          </div>
 
-        {/* Email — somente leitura */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+            {info.bumps.map(bump => {
+              const selecionado = extras.has(bump.id)
+              return (
+                <button
+                  key={bump.id}
+                  type="button"
+                  onClick={() => toggleExtra(bump.id)}
+                  style={{
+                    display: 'flex', gap: 14, alignItems: 'center',
+                    background: selecionado ? 'rgba(167,139,250,.1)' : 'rgba(255,255,255,.03)',
+                    border: `1px solid ${selecionado ? 'rgba(167,139,250,.4)' : 'rgba(255,255,255,.08)'}`,
+                    borderRadius: 12, padding: '14px 16px',
+                    cursor: 'pointer', textAlign: 'left', width: '100%',
+                    transition: 'all .15s',
+                  }}
+                >
+                  <Thumb url={bump.thumbnailUrl} title={bump.title} size={44} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: selecionado ? '#fff' : 'rgba(255,255,255,.7)', lineHeight: 1.3 }}>
+                      {bump.title}
+                    </div>
+                    <div style={{ fontSize: 11, color: selecionado ? '#a78bfa' : 'rgba(255,255,255,.3)', marginTop: 3 }}>
+                      {selecionado ? '✓ adicionado ao pedido' : '+ adicionar ao pedido'}
+                    </div>
+                  </div>
+                  <div style={{
+                    fontSize: 15, fontWeight: 800, color: selecionado ? '#a78bfa' : 'rgba(255,255,255,.5)',
+                    fontFamily: 'var(--font-h)', flexShrink: 0,
+                  }}>
+                    R$ {Number(bump.price).toFixed(2).replace('.', ',')}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {/* Resumo do total */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+        padding: '12px 0', borderTop: '1px solid rgba(255,255,255,.07)',
+        borderBottom: '1px solid rgba(255,255,255,.07)', marginBottom: 24,
+      }}>
+        <span style={{ fontFamily: 'var(--font-m)', fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: '.08em' }}>
+          TOTAL — {qtd} {qtd === 1 ? 'curso' : 'cursos'}
+        </span>
+        <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-h)', transition: 'all .2s' }}>
+          R$ {total.toFixed(2).replace('.', ',')}
+        </span>
+      </div>
+
+      {/* Formulário */}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
-          <label style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 8, fontFamily: 'var(--font-m)', letterSpacing: '.06em' }}>
+          <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,.4)', marginBottom: 7, fontFamily: 'var(--font-m)', letterSpacing: '.06em' }}>
             EMAIL
           </label>
           <div style={{
-            width: '100%', boxSizing: 'border-box',
-            background: 'rgba(255,255,255,.03)',
-            border: '1px solid rgba(255,255,255,.06)',
-            borderRadius: 8, padding: '12px 14px',
-            fontSize: 14, color: 'rgba(255,255,255,.5)',
+            background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)',
+            borderRadius: 8, padding: '11px 14px', fontSize: 13, color: 'rgba(255,255,255,.45)',
           }}>
             {info.email}
           </div>
         </div>
 
-        {/* CPF */}
         <div>
-          <label style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 8, fontFamily: 'var(--font-m)', letterSpacing: '.06em' }}>
+          <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,.4)', marginBottom: 7, fontFamily: 'var(--font-m)', letterSpacing: '.06em' }}>
             CPF
           </label>
           <input
@@ -172,11 +269,11 @@ export default function CheckoutPage() {
               fontFamily: 'var(--font-m)', letterSpacing: '.08em',
             }}
           />
-          {erro && <div style={{ fontSize: 12, color: '#f87171', marginTop: 6 }}>{erro}</div>}
+          {erro && <div style={{ fontSize: 12, color: '#f87171', marginTop: 5 }}>{erro}</div>}
         </div>
 
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', margin: 0, lineHeight: 1.6 }}>
-          Você será redirecionado para a página segura do Asaas onde poderá pagar via PIX, boleto ou cartão de crédito.
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,.25)', margin: 0, lineHeight: 1.6 }}>
+          Você será redirecionado para a página segura do Asaas onde poderá pagar via PIX, boleto ou cartão.
         </p>
 
         <button
@@ -184,15 +281,14 @@ export default function CheckoutPage() {
           disabled={loading}
           style={{
             background: loading ? 'rgba(255,255,255,.1)' : 'linear-gradient(135deg, #5bc8ff, #a78bfa)',
-            border: 'none', borderRadius: 8, padding: '13px',
+            border: 'none', borderRadius: 8, padding: '14px',
             color: loading ? 'rgba(255,255,255,.4)' : '#06040e',
-            fontWeight: 700, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer',
+            fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
-          {loading ? 'GERANDO COBRANÇA...' : 'IR PARA O PAGAMENTO →'}
+          {loading ? 'GERANDO COBRANÇA...' : `PAGAR R$ ${total.toFixed(2).replace('.', ',')} →`}
         </button>
       </form>
     </div>
   )
 }
-

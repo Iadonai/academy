@@ -12,7 +12,7 @@ export async function GET(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
-  const [curso, perfil] = await Promise.all([
+  const [curso, perfil, acessos, assinatura, todosCursos] = await Promise.all([
     prisma.course.findUnique({
       where: { id: cursoId },
       select: { id: true, title: true, price: true, thumbnailUrl: true, published: true },
@@ -21,11 +21,28 @@ export async function GET(
       where: { id: user.id },
       select: { email: true, cpfCnpj: true },
     }),
+    prisma.courseAccess.findMany({
+      where: { userId: user.id },
+      select: { courseId: true },
+    }),
+    prisma.subscription.findFirst({
+      where: { userId: user.id, status: 'ACTIVE' },
+    }),
+    prisma.course.findMany({
+      where: { id: { not: cursoId }, published: true, price: { gt: 0 } },
+      select: { id: true, title: true, price: true, thumbnailUrl: true },
+      orderBy: { order: 'asc' },
+      take: 5,
+    }),
   ])
 
   if (!curso || !curso.published) {
     return NextResponse.json({ error: 'Curso não encontrado' }, { status: 404 })
   }
+
+  const idsComAcesso = new Set(acessos.map(a => a.courseId))
+  // Se tem assinatura ativa, já tem acesso a tudo — sem bumps
+  const bumps = assinatura ? [] : todosCursos.filter(c => !idsComAcesso.has(c.id))
 
   return NextResponse.json({
     id: curso.id,
@@ -34,5 +51,11 @@ export async function GET(
     thumbnailUrl: curso.thumbnailUrl,
     email: perfil?.email ?? user.email ?? '',
     cpfCnpj: perfil?.cpfCnpj ?? '',
+    bumps: bumps.map(c => ({
+      id: c.id,
+      title: c.title,
+      price: String(c.price),
+      thumbnailUrl: c.thumbnailUrl,
+    })),
   })
 }

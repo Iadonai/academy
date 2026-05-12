@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logout } from '@/app/actions/auth'
 import { EventTracker } from '@/components/EventTracker'
-import { CartIcon } from '@/components/CartIcon'
 
 const TICKER_ITEMS = [
   'IADONAI ACADEMY // SISTEMA ONLINE',
@@ -118,8 +117,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </span>
             ))}
           </div>
-
-          <CartIcon />
 
           <form action={logout} style={{ margin: 0 }}>
             <button type="submit" className="btn-ghost" style={{ padding: '4px 10px', fontSize: '11px' }}>
