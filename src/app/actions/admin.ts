@@ -56,8 +56,6 @@ export async function editarCurso(formData: FormData) {
       price: parseFloat(formData.get('price') as string) || 0,
       isSubscriptionOnly: formData.get('isSubscriptionOnly') === 'true',
       published: formData.get('published') === 'true',
-      kiwifyProductId: (formData.get('kiwifyProductId') as string) || null,
-      kiwifyCheckoutUrl: (formData.get('kiwifyCheckoutUrl') as string) || null,
       ...(thumbnailUrl ? { thumbnailUrl } : {}),
     },
   })

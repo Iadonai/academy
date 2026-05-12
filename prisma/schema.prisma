@@ -30,17 +30,18 @@ enum SubscriptionStatus {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
-  name         String
-  avatarUrl    String?      @map("avatar_url")
-  role         Role         @default(STUDENT)
-  status       MemberStatus @default(ACTIVE)
-  xpTotal      Int          @default(0) @map("xp_total")
-  level        Int          @default(1)
-  welcomeSentAt DateTime?   @map("welcome_sent_at")
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
+  id              String       @id @default(uuid())
+  email           String       @unique
+  name            String
+  avatarUrl       String?      @map("avatar_url")
+  role            Role         @default(STUDENT)
+  status          MemberStatus @default(ACTIVE)
+  xpTotal         Int          @default(0) @map("xp_total")
+  level           Int          @default(1)
+  welcomeSentAt   DateTime?    @map("welcome_sent_at")
+  asaasCustomerId String?      @unique @map("asaas_customer_id")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
 
   courseAccesses   CourseAccess[]
   certificates     Certificate[]
@@ -185,7 +186,8 @@ model CourseAccess {
 model Subscription {
   id                   String             @id @default(uuid())
   userId               String             @unique @map("user_id")
-  kiwifySubscriptionId String             @unique @map("kiwify_subscription_id")
+  kiwifySubscriptionId String?            @unique @map("kiwify_subscription_id")
+  asaasSubscriptionId  String?            @unique @map("asaas_subscription_id")
   status               SubscriptionStatus @default(ACTIVE)
   expiresAt            DateTime?          @map("expires_at")
   createdAt            DateTime           @default(now()) @map("created_at")

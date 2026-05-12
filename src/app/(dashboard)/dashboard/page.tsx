@@ -30,7 +30,7 @@ export default async function DashboardPage() {
   const todosCursos = await prisma.course.findMany({
     where: { published: true },
     orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
-    select: { id: true, title: true, description: true, thumbnailUrl: true, price: true, kiwifyCheckoutUrl: true, _count: { select: { modules: true } } },
+    select: { id: true, title: true, description: true, thumbnailUrl: true, price: true, _count: { select: { modules: true } } },
   })
 
   // IDs com acesso direto
@@ -114,6 +114,37 @@ export default async function DashboardPage() {
             <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.1em', marginBottom: '5px' }}>// FRASE DO DIA</div>
             <div style={{ fontSize: '13px', color: 'var(--tx)', lineHeight: 1.6, fontStyle: 'italic' }}>"{frase.texto}"</div>
             <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', marginTop: '5px', letterSpacing: '.04em' }}>— {frase.autor}</div>
+          </div>
+        )}
+
+        {/* ── BANNER ASSINATURA ── */}
+        {!isAdmin && !assinatura && (
+          <div style={{
+            marginBottom: 20,
+            padding: '18px 20px',
+            background: 'linear-gradient(135deg, rgba(167,139,250,.08) 0%, rgba(91,200,255,.06) 100%)',
+            border: '1px solid rgba(167,139,250,.2)',
+            borderRadius: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+          }}>
+            <div>
+              <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: '#a78bfa', letterSpacing: '.12em', marginBottom: 4 }}>// ACESSO COMPLETO</div>
+              <div style={{ fontFamily: 'var(--font-b)', fontSize: 14, color: '#fff', fontWeight: 700 }}>Desbloqueie todos os cursos</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', marginTop: 3 }}>Assinatura mensal — cancele quando quiser</div>
+            </div>
+            <form method="POST" action="/api/checkout/assinatura">
+              <button
+                type="submit"
+                style={{
+                  background: 'linear-gradient(135deg, #a78bfa, #5bc8ff)',
+                  border: 'none', borderRadius: 8, padding: '9px 22px',
+                  color: '#06040e', fontWeight: 700, fontSize: 13,
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                Assinar agora
+              </button>
+            </form>
           </div>
         )}
 
