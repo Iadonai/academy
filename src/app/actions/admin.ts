@@ -200,7 +200,7 @@ export async function adicionarLink(formData: FormData) {
   const moduleId = formData.get('moduleId') as string
   const courseId = formData.get('courseId') as string
 
-  const anexo = await prisma.lessonAttachment.create({
+  await prisma.lessonAttachment.create({
     data: {
       lessonId,
       name: formData.get('name') as string,
@@ -284,6 +284,42 @@ export async function salvarConfig(formData: FormData) {
   }
 
   revalidatePath('/admin/configuracoes')
+}
+
+export async function salvarBanner(formData: FormData) {
+  await verificarAdmin()
+
+  const bannerLink = (formData.get('hero_banner_link') as string) || ''
+
+  await prisma.platformConfig.upsert({
+    where: { key: 'hero_banner_link' },
+    create: { key: 'hero_banner_link', value: bannerLink },
+    update: { value: bannerLink },
+  })
+
+  const file = formData.get('banner_file') as File | null
+  if (file && file.size > 0) {
+    const supabase = await createClient()
+    const ext = file.name.split('.').pop()
+    const caminho = `platform/banner.${ext}`
+
+    const { error } = await supabase.storage
+      .from('course-thumbnails')
+      .upload(caminho, file, { contentType: file.type, upsert: true })
+
+    if (!error) {
+      const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(caminho)
+      const url = `${data.publicUrl}?t=${Date.now()}`
+      await prisma.platformConfig.upsert({
+        where: { key: 'hero_banner_url' },
+        create: { key: 'hero_banner_url', value: url },
+        update: { value: url },
+      })
+    }
+  }
+
+  revalidatePath('/admin/configuracoes')
+  revalidatePath('/dashboard')
 }
 
 // ── Canais do Fórum ───────────────────────────────────────────────────────────
