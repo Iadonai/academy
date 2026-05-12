@@ -80,91 +80,93 @@ export default async function DashboardPage() {
   const concluidos = cursosComProgresso.filter((c) => c.progresso === 100).length
 
   return (
-    <div style={{ padding: '16px 20px' }}>
-      {/* Hero compacto */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-        background: 'var(--s2)', border: '1px solid var(--bdr)',
-        borderLeft: '3px solid var(--cy)',
-        padding: '14px 20px', marginBottom: 16,
-      }}>
-        {/* Info esquerda */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+    <div style={{ padding: '0 0 24px' }}>
+
+      {/* ── BANNER GRANDE NO TOPO ── */}
+      {bannerUrl ? (
+        bannerLink ? (
+          <a href={bannerLink} target="_blank" rel="noopener noreferrer" style={{ display: 'block', width: '100%', overflow: 'hidden', position: 'relative' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={bannerUrl} alt="Banner" style={{ width: '100%', height: 280, objectFit: 'cover', display: 'block' }} />
+          </a>
+        ) : (
+          <div style={{ width: '100%', overflow: 'hidden' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={bannerUrl} alt="Banner" style={{ width: '100%', height: 280, objectFit: 'cover', display: 'block' }} />
+          </div>
+        )
+      ) : (
+        <div style={{
+          width: '100%', height: 200,
+          background: 'linear-gradient(135deg, var(--s2) 0%, rgba(91,200,255,.06) 100%)',
+          border: '1px dashed var(--bdr)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+        }}>
+          <div style={{ fontFamily: 'var(--font-h)', fontSize: 32, color: 'var(--cy)', opacity: .15 }}>◈</div>
+          <span style={{ fontFamily: 'var(--font-m)', fontSize: 10, color: 'var(--mt)', letterSpacing: '.1em' }}>
+            CONFIGURE O BANNER EM ADMIN → CONFIGURAÇÕES
+          </span>
+        </div>
+      )}
+
+      <div style={{ padding: '16px 20px' }}>
+
+        {/* ── BARRA DE STATS ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap',
+          background: 'var(--s2)', border: '1px solid var(--bdr)',
+          borderLeft: '3px solid var(--cy)',
+          padding: '12px 20px', marginBottom: 20,
+        }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--cy)', letterSpacing: '.12em', marginBottom: 3 }}>// CLASSROOM</div>
-            <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: 16, fontWeight: 900, letterSpacing: '.06em' }}>
+            <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--cy)', letterSpacing: '.12em', marginBottom: 2 }}>// CLASSROOM</div>
+            <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: 15, fontWeight: 900, letterSpacing: '.06em' }}>
               {primeiroNome.toUpperCase()}
             </div>
           </div>
-          <div style={{ width: 1, height: 32, background: 'var(--bdr)', flexShrink: 0 }} />
+          <div style={{ width: 1, height: 28, background: 'var(--bdr)', flexShrink: 0 }} />
           {[
             { v: perfil?.xpTotal ?? 0, l: 'XP' },
             { v: perfil?.level ?? 1, l: 'NÍVEL' },
             { v: concluidos, l: 'CONCLUÍDOS' },
           ].map(s => (
             <div key={s.l} style={{ textAlign: 'center' }}>
-              <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: 20 }}>{s.v}</div>
+              <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: 18 }}>{s.v}</div>
               <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--mt)', letterSpacing: '.08em' }}>{s.l}</div>
             </div>
           ))}
         </div>
 
-        {/* Banner direita */}
-        {bannerUrl ? (
-          bannerLink ? (
-            <a href={bannerLink} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, display: 'block', borderRadius: 6, overflow: 'hidden', border: '1px solid var(--bdr)', transition: 'opacity .2s' }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={bannerUrl} alt="Banner" style={{ height: 64, width: 'auto', maxWidth: 260, display: 'block', objectFit: 'cover' }} />
-            </a>
-          ) : (
-            <div style={{ flexShrink: 0, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--bdr)' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={bannerUrl} alt="Banner" style={{ height: 64, width: 'auto', maxWidth: 260, display: 'block', objectFit: 'cover' }} />
-            </div>
-          )
-        ) : (
-          <div style={{
-            flexShrink: 0, height: 64, width: 200,
-            border: '1px dashed var(--bdr)', borderRadius: 6,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--mt)', letterSpacing: '.08em' }}>BANNER</span>
+        {/* ── FRASE DO DIA ── */}
+        {frase && (
+          <div style={{ marginBottom: 20, padding: '12px 18px', background: 'var(--s2)', border: '1px solid var(--bdr)', borderLeft: '3px solid var(--cy)' }}>
+            <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.1em', marginBottom: '5px' }}>// FRASE DO DIA</div>
+            <div style={{ fontSize: '13px', color: 'var(--tx)', lineHeight: 1.6, fontStyle: 'italic' }}>"{frase.texto}"</div>
+            <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', marginTop: '5px', letterSpacing: '.04em' }}>— {frase.autor}</div>
           </div>
         )}
-      </div>
 
-      {/* Frase do dia */}
-      {frase && (
-        <div style={{ margin: '16px 0', padding: '14px 18px', background: 'var(--s2)', border: '1px solid var(--bdr)', borderLeft: '3px solid var(--cy)' }}>
-          <div style={{ fontFamily: 'var(--font-m)', fontSize: '9px', color: 'var(--cy)', letterSpacing: '.1em', marginBottom: '6px' }}>// FRASE DO DIA</div>
-          <div style={{ fontSize: '13px', color: 'var(--tx)', lineHeight: 1.6, fontStyle: 'italic' }}>"{frase.texto}"</div>
-          <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', marginTop: '6px', letterSpacing: '.04em' }}>— {frase.autor}</div>
+        {/* ── CURSOS ── */}
+        <div className="section-title" style={{ fontFamily: 'var(--font-h)', fontSize: '11px', letterSpacing: '.12em', marginBottom: '14px' }}>
+          // MEUS_CURSOS
         </div>
-      )}
 
-      {/* Grid de cursos */}
-      <div className="section-title" style={{ fontFamily: 'var(--font-h)', fontSize: '11px', letterSpacing: '.12em', marginBottom: '14px' }}>
-        // MEUS_CURSOS
+        {cursosComProgresso.length === 0 ? (
+          <div style={{
+            background: 'var(--s2)', border: '1px dashed var(--bdr)',
+            padding: '48px 20px', textAlign: 'center',
+          }}>
+            <p style={{ fontFamily: 'var(--font-m)', color: 'var(--mt)', fontSize: '12px', letterSpacing: '.06em' }}>
+              {isAdmin ? 'NENHUM CURSO PUBLICADO. CRIE NO ADMIN.' : 'NENHUM CURSO DISPONÍVEL.'}
+            </p>
+          </div>
+        ) : (
+          <CursosGrid
+            cursos={cursosComProgresso.map((c) => ({ ...c, price: String(c.price) }))}
+            isAdmin={isAdmin}
+          />
+        )}
       </div>
-
-      {cursosComProgresso.length === 0 ? (
-        <div style={{
-          background: 'var(--s2)', border: '1px dashed var(--bdr)',
-          padding: '48px 20px', textAlign: 'center',
-        }}>
-          <p style={{ fontFamily: 'var(--font-m)', color: 'var(--mt)', fontSize: '12px', letterSpacing: '.06em' }}>
-            {isAdmin ? 'NENHUM CURSO PUBLICADO. CRIE NO ADMIN.' : 'NENHUM CURSO DISPONÍVEL.'}
-          </p>
-        </div>
-      ) : (
-        <CursosGrid
-          cursos={cursosComProgresso.map((c) => ({ ...c, price: String(c.price) }))}
-          isAdmin={isAdmin}
-        />
-      )}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { verificarAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
-import { salvarConfig, salvarBanner } from '@/app/actions/admin'
+import { salvarConfig } from '@/app/actions/admin'
 
 export default async function ConfiguracoesPage() {
   await verificarAdmin()
@@ -18,7 +18,7 @@ export default async function ConfiguracoesPage() {
       {/* Banner do Dashboard */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
         <h2 className="text-lg font-semibold text-slate-800">Banner do Dashboard</h2>
-        <form action={salvarBanner} encType="multipart/form-data" className="space-y-4">
+        <form method="POST" action="/api/admin/upload-banner" encType="multipart/form-data" className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-700">Imagem do banner</label>
             {configMap['hero_banner_url'] && (
