@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
   const perfil = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { name: true, xpTotal: true, level: true, role: true },
+    select: { role: true },
   })
 
   const isAdmin = perfil?.role === 'ADMIN'
@@ -76,9 +76,6 @@ export default async function DashboardPage() {
 
   const [frase] = await Promise.all([buscarFrase()])
 
-  const primeiroNome = perfil?.name?.split(' ')[0] ?? 'ALUNO'
-  const concluidos = cursosComProgresso.filter((c) => c.progresso === 100).length
-
   return (
     <div style={{ padding: '0 0 24px' }}>
 
@@ -110,32 +107,6 @@ export default async function DashboardPage() {
       )}
 
       <div style={{ padding: '16px 20px' }}>
-
-        {/* ── BARRA DE STATS ── */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap',
-          background: 'var(--s2)', border: '1px solid var(--bdr)',
-          borderLeft: '3px solid var(--cy)',
-          padding: '12px 20px', marginBottom: 20,
-        }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--cy)', letterSpacing: '.12em', marginBottom: 2 }}>// CLASSROOM</div>
-            <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: 15, fontWeight: 900, letterSpacing: '.06em' }}>
-              {primeiroNome.toUpperCase()}
-            </div>
-          </div>
-          <div style={{ width: 1, height: 28, background: 'var(--bdr)', flexShrink: 0 }} />
-          {[
-            { v: perfil?.xpTotal ?? 0, l: 'XP' },
-            { v: perfil?.level ?? 1, l: 'NÍVEL' },
-            { v: concluidos, l: 'CONCLUÍDOS' },
-          ].map(s => (
-            <div key={s.l} style={{ textAlign: 'center' }}>
-              <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: 18 }}>{s.v}</div>
-              <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--mt)', letterSpacing: '.08em' }}>{s.l}</div>
-            </div>
-          ))}
-        </div>
 
         {/* ── FRASE DO DIA ── */}
         {frase && (

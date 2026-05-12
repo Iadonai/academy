@@ -21,13 +21,27 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const perfil = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { name: true, xpTotal: true, role: true },
+    select: { name: true, xpTotal: true, level: true, role: true },
   })
 
   const isAdmin = perfil?.role === 'ADMIN'
+  const primeiroNome = perfil?.name?.split(' ')[0] ?? user.email?.split('@')[0] ?? 'ALUNO'
   const iniciais = perfil?.name
     ? perfil.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()
     : user.email?.[0].toUpperCase() ?? '?'
+
+  const [progresses, todosCursos] = await Promise.all([
+    prisma.lessonProgress.findMany({ where: { userId: user.id }, select: { lessonId: true } }),
+    prisma.course.findMany({
+      where: { published: true },
+      select: { id: true, modules: { select: { lessons: { select: { id: true } } } } },
+    }),
+  ])
+  const concluidosSet = new Set(progresses.map(p => p.lessonId))
+  const concluidos = todosCursos.filter(c => {
+    const aulas = c.modules.flatMap(m => m.lessons)
+    return aulas.length > 0 && aulas.every(a => concluidosSet.has(a.id))
+  }).length
 
   const tickerContent = [...TICKER_ITEMS, ...TICKER_ITEMS]
 
@@ -85,8 +99,25 @@ export default async function DashboardLayout({ children }: { children: React.Re
           {isAdmin && <NavLink href="/admin">Admin</NavLink>}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto' }}>
-          <span className="xp-chip">{perfil?.xpTotal ?? 0} XP</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: 'auto' }}>
+          {/* Stats do usuário */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontFamily: 'var(--font-h)', fontSize: 11, color: 'var(--cy)', letterSpacing: '.08em', fontWeight: 700 }}>
+              {primeiroNome.toUpperCase()}
+            </span>
+            <span style={{ width: 1, height: 14, background: 'var(--bdr)', display: 'inline-block' }} />
+            {[
+              { v: perfil?.xpTotal ?? 0, l: 'XP' },
+              { v: perfil?.level ?? 1, l: 'NV' },
+              { v: concluidos, l: '✓' },
+            ].map(s => (
+              <span key={s.l} style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                <span className="xp-chip" style={{ letterSpacing: '.04em' }}>{s.v}</span>
+                <span style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--mt)', letterSpacing: '.06em' }}>{s.l}</span>
+              </span>
+            ))}
+          </div>
+
           <form action={logout} style={{ margin: 0 }}>
             <button type="submit" className="btn-ghost" style={{ padding: '4px 10px', fontSize: '11px' }}>
               SAIR
