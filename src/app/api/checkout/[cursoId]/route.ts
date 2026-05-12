@@ -57,7 +57,7 @@ export async function POST(
     },
   })
 
-  const successUrl = new URL(`/cursos/${cursoId}?pagamento=ok`, request.url).toString()
+  const successUrl = new URL(`/dashboard?pagamento=ok`, request.url).toString()
   const externalReference = buildRef('course', user.id, cursoId)
 
   const cobranca = await criarCobranca({
