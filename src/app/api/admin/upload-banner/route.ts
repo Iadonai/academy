@@ -3,17 +3,16 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
-  const base = '/admin/configuracoes'
-
-  const supabaseAuth = await createClient()
-  const { data: { user } } = await supabaseAuth.auth.getUser()
-  if (!user) return NextResponse.redirect(new URL('/login', request.url))
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ ok: false, error: 'Não autorizado' }, { status: 401 })
 
   const perfil = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true } })
-  if (perfil?.role !== 'ADMIN') return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (perfil?.role !== 'ADMIN') return NextResponse.json({ ok: false, error: 'Acesso negado' }, { status: 403 })
 
   const formData = await request.formData()
   const bannerLink = (formData.get('hero_banner_link') as string) || ''
+  const file = formData.get('banner_file') as File | null
 
   await prisma.platformConfig.upsert({
     where: { key: 'hero_banner_link' },
@@ -21,14 +20,11 @@ export async function POST(request: NextRequest) {
     update: { value: bannerLink },
   })
 
-  const file = formData.get('banner_file') as File | null
-
   if (!file || file.size === 0) {
-    return NextResponse.redirect(new URL(base, request.url))
+    return NextResponse.json({ ok: true, url: null })
   }
 
-  const supabase = await createClient()
-  const ext = file.name.split('.').pop()
+  const ext = file.name.split('.').pop() ?? 'jpg'
   const caminho = `platform/banner.${ext}`
 
   const { error: uploadError } = await supabase.storage
@@ -36,9 +32,7 @@ export async function POST(request: NextRequest) {
     .upload(caminho, file, { contentType: file.type || 'image/jpeg', upsert: true })
 
   if (uploadError) {
-    return NextResponse.redirect(
-      new URL(`${base}?erro=upload-falhou&detalhe=${encodeURIComponent(uploadError.message)}`, request.url)
-    )
+    return NextResponse.json({ ok: false, error: uploadError.message }, { status: 500 })
   }
 
   const { data: urlData } = supabase.storage.from('course-thumbnails').getPublicUrl(caminho)
@@ -50,5 +44,5 @@ export async function POST(request: NextRequest) {
     update: { value: url },
   })
 
-  return NextResponse.redirect(new URL(base, request.url))
+  return NextResponse.json({ ok: true, url })
 }
