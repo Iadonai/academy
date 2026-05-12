@@ -286,6 +286,25 @@ export async function salvarConfig(formData: FormData) {
   revalidatePath('/admin/configuracoes')
 }
 
+export async function salvarUrlBanner(url: string, link: string) {
+  await verificarAdmin()
+
+  await prisma.platformConfig.upsert({
+    where: { key: 'hero_banner_url' },
+    create: { key: 'hero_banner_url', value: url },
+    update: { value: url },
+  })
+
+  await prisma.platformConfig.upsert({
+    where: { key: 'hero_banner_link' },
+    create: { key: 'hero_banner_link', value: link },
+    update: { value: link },
+  })
+
+  revalidatePath('/admin/configuracoes')
+  revalidatePath('/dashboard')
+}
+
 export async function salvarBanner(formData: FormData) {
   await verificarAdmin()
 

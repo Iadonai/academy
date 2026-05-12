@@ -1,6 +1,7 @@
 import { verificarAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { salvarConfig } from '@/app/actions/admin'
+import { BannerUpload } from '@/components/admin/BannerUpload'
 
 export default async function ConfiguracoesPage() {
   await verificarAdmin()
@@ -18,37 +19,10 @@ export default async function ConfiguracoesPage() {
       {/* Banner do Dashboard */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
         <h2 className="text-lg font-semibold text-slate-800">Banner do Dashboard</h2>
-        <form method="POST" action="/api/admin/upload-banner" encType="multipart/form-data" className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Imagem do banner</label>
-            {configMap['hero_banner_url'] && (
-              <div className="rounded-md overflow-hidden border border-slate-200 mb-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={configMap['hero_banner_url']} alt="Banner atual" className="w-full h-24 object-cover" />
-              </div>
-            )}
-            <input
-              type="file"
-              name="banner_file"
-              accept="image/*"
-              className="flex w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-4 file:rounded-md file:border file:border-slate-200 file:text-sm file:bg-white file:text-slate-700 hover:file:bg-slate-50 cursor-pointer"
-            />
-            <p className="text-xs text-slate-400">Proporção recomendada: 4:1 ou 16:5. PNG ou JPG.</p>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Link ao clicar no banner</label>
-            <input
-              name="hero_banner_link"
-              defaultValue={configMap['hero_banner_link'] ?? ''}
-              placeholder="https://exemplo.com/oferta"
-              className="flex w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-            <p className="text-xs text-slate-400">Deixe vazio para o banner não ser clicável.</p>
-          </div>
-          <button type="submit" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md">
-            Salvar banner
-          </button>
-        </form>
+        <BannerUpload
+          bannerAtual={configMap['hero_banner_url'] ?? null}
+          linkAtual={configMap['hero_banner_link'] ?? null}
+        />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
