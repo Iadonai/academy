@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
@@ -13,7 +14,8 @@ export async function GET(request: NextRequest) {
   const ext = request.nextUrl.searchParams.get('ext') ?? 'jpg'
   const path = `platform/banner.${ext}`
 
-  const { data, error } = await supabase.storage
+  const adminClient = await createAdminClient()
+  const { data, error } = await adminClient.storage
     .from('course-thumbnails')
     .createSignedUploadUrl(path)
 
