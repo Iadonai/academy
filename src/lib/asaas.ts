@@ -19,6 +19,7 @@ export interface AsaasCustomer {
   id: string
   name: string
   email: string
+  cpfCnpj?: string
 }
 
 export interface AsaasPayment {
@@ -36,20 +37,36 @@ export interface AsaasSubscription {
 }
 
 // Busca ou cria um cliente no Asaas pelo e-mail
-export async function buscarOuCriarCliente(email: string, name: string): Promise<AsaasCustomer> {
+export async function buscarOuCriarCliente(email: string, name: string, cpfCnpj?: string): Promise<AsaasCustomer> {
   const searchRes = await fetch(
     `${BASE_URL}/customers?email=${encodeURIComponent(email)}&limit=1`,
     { headers: headers() }
   )
   const searchData = await searchRes.json()
-  if (searchData.data?.length > 0) return searchData.data[0] as AsaasCustomer
+  if (searchData.data?.length > 0) {
+    const cliente = searchData.data[0] as AsaasCustomer
+    // Atualiza CPF se ainda não tinha
+    if (cpfCnpj && !cliente.cpfCnpj) {
+      await fetch(`${BASE_URL}/customers/${cliente.id}`, {
+        method: 'PUT',
+        headers: headers(),
+        body: JSON.stringify({ name, email, cpfCnpj }),
+      })
+    }
+    return cliente
+  }
 
   const createRes = await fetch(`${BASE_URL}/customers`, {
     method: 'POST',
     headers: headers(),
-    body: JSON.stringify({ name, email }),
+    body: JSON.stringify({ name, email, cpfCnpj: cpfCnpj ?? '', notificationDisabled: true }),
   })
-  return createRes.json() as Promise<AsaasCustomer>
+  const createData = await createRes.json()
+  if (!createData.id) {
+    console.error('[asaas] erro ao criar cliente:', JSON.stringify(createData))
+    throw new Error(createData.errors?.[0]?.description ?? 'Erro ao criar cliente no Asaas')
+  }
+  return createData as AsaasCustomer
 }
 
 // Cria uma cobrança avulsa (PIX, boleto ou cartão)

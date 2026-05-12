@@ -39,6 +39,7 @@ model User {
   xpTotal         Int          @default(0) @map("xp_total")
   level           Int          @default(1)
   welcomeSentAt   DateTime?    @map("welcome_sent_at")
+  cpfCnpj         String?      @map("cpf_cnpj")
   asaasCustomerId String?      @unique @map("asaas_customer_id")
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @updatedAt @map("updated_at")

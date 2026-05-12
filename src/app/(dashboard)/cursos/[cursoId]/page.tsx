@@ -171,20 +171,18 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
           <div style={{ fontSize: '30px', fontWeight: 800, color: '#fff', marginBottom: '16px', fontFamily: 'var(--font-h, sans-serif)' }}>
             R$ {Number(curso.price).toFixed(2).replace('.', ',')}
           </div>
-          <form method="POST" action={`/api/checkout/${cursoId}`}>
-            <button
-              type="submit"
-              style={{
-                display: 'inline-block',
-                background: 'linear-gradient(135deg, #5bc8ff, #a78bfa)',
-                borderRadius: '8px', padding: '11px 32px',
-                color: '#06040e', fontWeight: 700, fontSize: '14px',
-                border: 'none', cursor: 'pointer',
-              }}
-            >
-              Comprar acesso
-            </button>
-          </form>
+          <Link
+            href={`/checkout/${cursoId}`}
+            style={{
+              display: 'inline-block',
+              background: 'linear-gradient(135deg, #5bc8ff, #a78bfa)',
+              borderRadius: '8px', padding: '11px 32px',
+              color: '#06040e', fontWeight: 700, fontSize: '14px',
+              textDecoration: 'none',
+            }}
+          >
+            Comprar acesso
+          </Link>
         </div>
       )}
 

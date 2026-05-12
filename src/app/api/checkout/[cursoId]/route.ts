@@ -11,7 +11,14 @@ export async function POST(
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.redirect(new URL('/login', request.url))
+  if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const body = await request.json().catch(() => ({}))
+  const cpfCnpj: string = (body.cpfCnpj ?? '').replace(/\D/g, '')
+
+  if (!cpfCnpj || cpfCnpj.length < 11) {
+    return NextResponse.json({ error: 'CPF obrigatório' }, { status: 400 })
+  }
 
   const [perfil, curso] = await Promise.all([
     prisma.user.findUnique({
@@ -29,27 +36,26 @@ export async function POST(
   }
 
   if (Number(curso.price) === 0) {
-    // Curso gratuito — libera acesso direto
     await prisma.courseAccess.upsert({
       where: { userId_courseId: { userId: user.id, courseId: cursoId } },
       create: { userId: user.id, courseId: cursoId, type: 'PURCHASE' },
       update: {},
     })
-    return NextResponse.redirect(new URL(`/cursos/${cursoId}`, request.url))
+    return NextResponse.json({ redirect: `/cursos/${cursoId}` })
   }
 
   const nome = perfil?.name ?? user.email ?? 'Aluno'
   const email = perfil?.email ?? user.email ?? ''
 
-  const cliente = await buscarOuCriarCliente(email, nome)
+  const cliente = await buscarOuCriarCliente(email, nome, cpfCnpj)
 
-  // Salva asaasCustomerId se ainda não tiver
-  if (!perfil?.asaasCustomerId) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { asaasCustomerId: cliente.id },
-    })
-  }
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      ...(!perfil?.asaasCustomerId ? { asaasCustomerId: cliente.id } : {}),
+      cpfCnpj,
+    },
+  })
 
   const successUrl = new URL(`/cursos/${cursoId}?pagamento=ok`, request.url).toString()
   const externalReference = buildRef('course', user.id, cursoId)
@@ -62,11 +68,9 @@ export async function POST(
     successUrl,
   })
 
-  console.log('[checkout] resposta Asaas:', JSON.stringify(cobranca))
-
   if (!cobranca.invoiceUrl) {
     return NextResponse.json({ error: 'Erro ao gerar cobrança', detalhe: cobranca }, { status: 500 })
   }
 
-  return NextResponse.redirect(cobranca.invoiceUrl)
+  return NextResponse.json({ invoiceUrl: cobranca.invoiceUrl })
 }
