@@ -67,6 +67,13 @@ export default async function DashboardPage() {
     })
   )
 
+  const bannerConfigs = await prisma.platformConfig.findMany({
+    where: { key: { in: ['hero_banner_url', 'hero_banner_link'] } },
+  })
+  const bannerMap = Object.fromEntries(bannerConfigs.map(c => [c.key, c.value]))
+  const bannerUrl = bannerMap['hero_banner_url'] ?? null
+  const bannerLink = bannerMap['hero_banner_link'] ?? null
+
   const [frase] = await Promise.all([buscarFrase()])
 
   const primeiroNome = perfil?.name?.split(' ')[0] ?? 'ALUNO'
@@ -74,38 +81,59 @@ export default async function DashboardPage() {
 
   return (
     <div style={{ padding: '16px 20px' }}>
-      {/* Hero */}
-      <div className="hero-banner">
-        <div style={{ position: 'relative' }}>
-          <div style={{
-            fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--cy)',
-            background: 'rgba(91,200,255,.08)', border: '1px solid rgba(91,200,255,.25)',
-            padding: '3px 8px', letterSpacing: '.1em', marginBottom: '8px', display: 'inline-block',
-          }}>
-            // CLASSROOM
-          </div>
-          <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '18px', fontWeight: 900, letterSpacing: '.06em', marginBottom: '6px' }}>
-            BEM-VINDO, {primeiroNome.toUpperCase()}
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--mt)', letterSpacing: '.02em' }}>
-            {cursosComProgresso.length} {cursosComProgresso.length === 1 ? 'curso disponível' : 'cursos disponíveis'}
-          </div>
-          <div style={{ display: 'flex', gap: '20px', marginTop: '12px' }}>
-            <div>
-              <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '22px' }}>{perfil?.xpTotal ?? 0}</div>
-              <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', letterSpacing: '.08em' }}>// XP TOTAL</div>
-            </div>
-            <div>
-              <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '22px' }}>{perfil?.level ?? 1}</div>
-              <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', letterSpacing: '.08em' }}>// NÍVEL</div>
-            </div>
-            <div>
-              <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '22px' }}>{concluidos}</div>
-              <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', letterSpacing: '.08em' }}>// CONCLUÍDOS</div>
+      {/* Hero compacto */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+        background: 'var(--s2)', border: '1px solid var(--bdr)',
+        borderLeft: '3px solid var(--cy)',
+        padding: '14px 20px', marginBottom: 16,
+      }}>
+        {/* Info esquerda */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--cy)', letterSpacing: '.12em', marginBottom: 3 }}>// CLASSROOM</div>
+            <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: 16, fontWeight: 900, letterSpacing: '.06em' }}>
+              {primeiroNome.toUpperCase()}
             </div>
           </div>
+          <div style={{ width: 1, height: 32, background: 'var(--bdr)', flexShrink: 0 }} />
+          {[
+            { v: perfil?.xpTotal ?? 0, l: 'XP' },
+            { v: perfil?.level ?? 1, l: 'NÍVEL' },
+            { v: concluidos, l: 'CONCLUÍDOS' },
+          ].map(s => (
+            <div key={s.l} style={{ textAlign: 'center' }}>
+              <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: 20 }}>{s.v}</div>
+              <div style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--mt)', letterSpacing: '.08em' }}>{s.l}</div>
+            </div>
+          ))}
         </div>
-        <div className="hero-hex">IA</div>
+
+        {/* Banner direita */}
+        {bannerUrl ? (
+          bannerLink ? (
+            <a href={bannerLink} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, display: 'block', borderRadius: 6, overflow: 'hidden', border: '1px solid var(--bdr)', transition: 'opacity .2s' }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '.85')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={bannerUrl} alt="Banner" style={{ height: 64, width: 'auto', maxWidth: 260, display: 'block', objectFit: 'cover' }} />
+            </a>
+          ) : (
+            <div style={{ flexShrink: 0, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--bdr)' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={bannerUrl} alt="Banner" style={{ height: 64, width: 'auto', maxWidth: 260, display: 'block', objectFit: 'cover' }} />
+            </div>
+          )
+        ) : (
+          <div style={{
+            flexShrink: 0, height: 64, width: 200,
+            border: '1px dashed var(--bdr)', borderRadius: 6,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--mt)', letterSpacing: '.08em' }}>BANNER</span>
+          </div>
+        )}
       </div>
 
       {/* Frase do dia */}
