@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { ThumbnailUploadInstrutor } from './ThumbnailUploadInstrutor'
 
 async function salvarCursoInstrutor(formData: FormData) {
   'use server'
@@ -20,6 +21,7 @@ async function salvarCursoInstrutor(formData: FormData) {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       price: parseFloat(formData.get('price') as string) || 0,
+      ...(formData.get('thumbnailUrl') ? { thumbnailUrl: formData.get('thumbnailUrl') as string } : {}),
     },
   })
 
@@ -39,7 +41,7 @@ export default async function InstrutorCursoEditarPage({
 
   const curso = await prisma.course.findUnique({
     where: { id },
-    select: { id: true, title: true, description: true, price: true, published: true, instructorId: true, revenueShare: true },
+    select: { id: true, title: true, description: true, price: true, published: true, instructorId: true, revenueShare: true, thumbnailUrl: true },
   })
 
   if (!curso || curso.instructorId !== user.id) notFound()
@@ -88,6 +90,11 @@ export default async function InstrutorCursoEditarPage({
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,.3)' }}>
             Sua parte: {Number(curso.revenueShare) * 100}% por venda
           </span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,.7)' }}>Thumbnail</label>
+          <ThumbnailUploadInstrutor cursoId={curso.id} thumbnailUrl={curso.thumbnailUrl ?? null} />
         </div>
 
         <button type="submit" style={{
