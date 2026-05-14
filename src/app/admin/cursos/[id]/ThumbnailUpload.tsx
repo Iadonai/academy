@@ -21,32 +21,22 @@ export function ThumbnailUpload({
     setLoading(true)
     setErro('')
 
-    const ext = file.name.split('.').pop()
-
-    // 1. Obter URL assinada do servidor
-    const res = await fetch(`/api/admin/thumbnail-signed-url?cursoId=${cursoId}&ext=${ext}`)
-    if (!res.ok) {
-      setErro('Erro ao preparar upload. Tente novamente.')
-      setLoading(false)
-      return
-    }
-    const { token, path, publicUrl } = await res.json() as {
-      token: string; path: string; publicUrl: string
-    }
-
-    // 2. Upload direto ao Supabase usando a URL assinada
     const supabase = createClient()
+    const ext = file.name.split('.').pop()
+    const caminho = `${cursoId}/thumbnail.${ext}`
+
     const { error } = await supabase.storage
       .from('course-thumbnails')
-      .uploadToSignedUrl(path, token, file, { contentType: file.type })
+      .upload(caminho, file, { contentType: file.type, upsert: true })
 
     if (error) {
-      setErro('Erro ao enviar imagem. Tente novamente.')
+      setErro(`Erro ao enviar imagem: ${error.message}`)
       setLoading(false)
       return
     }
 
-    setUrl(`${publicUrl}?t=${Date.now()}`)
+    const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(caminho)
+    setUrl(`${data.publicUrl}?t=${Date.now()}`)
     setLoading(false)
   }
 
