@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { buscarOuCriarCliente, criarAssinatura, buildRef } from '@/lib/asaas'
+import { buscarOuCriarCliente, criarCobranca, buildRef } from '@/lib/asaas'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.redirect(new URL('/login', request.url))
 
-  // Já tem assinatura ativa — redireciona direto
+  // Já tem acesso completo — redireciona direto
   const assinaturaAtiva = await prisma.subscription.findFirst({
     where: { userId: user.id, status: 'ACTIVE' },
   })
@@ -33,58 +33,28 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  // Valor configurável pelo admin (padrão R$ 49,90)
+  // Valor configurável pelo admin em Configurações (padrão R$ 197,00)
   const configValor = await prisma.platformConfig.findUnique({
     where: { key: 'asaas_subscription_price' },
   })
-  const valor = configValor ? parseFloat(configValor.value) : 49.90
+  const valor = configValor ? parseFloat(configValor.value) : 197.00
 
-  const successUrl = new URL('/dashboard?assinatura=ok', request.url).toString()
+  const successUrl = new URL('/dashboard?acesso=ok', request.url).toString()
+  // externalReference tipo 'subscription' → webhook cria Subscription ACTIVE → libera todos os cursos
   const externalReference = buildRef('subscription', user.id)
 
-  const assinatura = await criarAssinatura({
+  const cobranca = await criarCobranca({
     customerId: cliente.id,
     valor,
-    descricao: 'Assinatura IADONAI Academy — Acesso completo',
+    descricao: 'Acesso Completo IADONAI Academy — Todos os cursos',
     externalReference,
     successUrl,
   })
 
-  if (!assinatura.id) {
-    console.error('[assinatura] Asaas rejeitou criação:', JSON.stringify(assinatura))
-    return NextResponse.redirect(new URL('/dashboard?erro=assinatura', request.url))
-  }
-
-  // Busca o link de pagamento — tenta até 3x pois pode haver delay
-  const BASE_URL = process.env.ASAAS_SANDBOX === 'true'
-    ? 'https://sandbox.asaas.com/api/v3'
-    : 'https://api.asaas.com/v3'
-
-  const asaasHeaders = {
-    'Content-Type': 'application/json',
-    'access_token': process.env.ASAAS_API_KEY!,
-  }
-
-  let invoiceUrl: string | null = null
-
-  for (let tentativa = 0; tentativa < 3; tentativa++) {
-    if (tentativa > 0) await new Promise(r => setTimeout(r, 1000))
-
-    const cobrancasRes = await fetch(
-      `${BASE_URL}/subscriptions/${assinatura.id}/payments?limit=1`,
-      { headers: asaasHeaders }
-    )
-    const cobrancasData = await cobrancasRes.json()
-    console.log(`[assinatura] tentativa ${tentativa + 1} payments:`, JSON.stringify(cobrancasData))
-
-    invoiceUrl = cobrancasData.data?.[0]?.invoiceUrl ?? null
-    if (invoiceUrl) break
-  }
-
-  if (!invoiceUrl) {
-    console.error('[assinatura] invoiceUrl não encontrado para sub:', assinatura.id)
+  if (!cobranca.invoiceUrl) {
+    console.error('[acesso-completo] Asaas não retornou invoiceUrl:', JSON.stringify(cobranca))
     return NextResponse.redirect(new URL('/dashboard?erro=pagamento', request.url))
   }
 
-  return NextResponse.redirect(invoiceUrl)
+  return NextResponse.redirect(cobranca.invoiceUrl)
 }
