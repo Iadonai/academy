@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { BotaoCertificado } from './BotaoCertificado'
 import { BotaoCarrinho } from './BotaoCarrinho'
+import { BotaoMatricular } from './BotaoMatricular'
 
 export default async function CursoPage({ params }: { params: Promise<{ cursoId: string }> }) {
   const { cursoId } = await params
@@ -158,26 +159,40 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
         )}
       </div>
 
-      {/* Banner de compra */}
+      {/* Banner de acesso */}
       {!temAcesso && (
         <div style={{
-          background: 'rgba(167,139,250,.07)',
-          border: '1px solid rgba(167,139,250,.2)',
+          background: Number(curso.price) === 0 ? 'rgba(91,200,255,.07)' : 'rgba(167,139,250,.07)',
+          border: `1px solid ${Number(curso.price) === 0 ? 'rgba(91,200,255,.2)' : 'rgba(167,139,250,.2)'}`,
           borderRadius: '12px', padding: '28px',
           marginBottom: '24px', textAlign: 'center',
         }}>
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,.4)', marginBottom: '4px' }}>
-            Acesso necessário
-          </div>
-          <div style={{ fontSize: '30px', fontWeight: 800, color: '#fff', marginBottom: '16px', fontFamily: 'var(--font-h, sans-serif)' }}>
-            R$ {Number(curso.price).toFixed(2).replace('.', ',')}
-          </div>
-          <BotaoCarrinho curso={{
-            id: cursoId,
-            title: curso.title,
-            price: String(curso.price),
-            thumbnailUrl: curso.thumbnailUrl ?? null,
-          }} />
+          {Number(curso.price) === 0 ? (
+            <>
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,.4)', marginBottom: '4px' }}>
+                Curso gratuito
+              </div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: '#5bc8ff', marginBottom: '16px', fontFamily: 'var(--font-h, sans-serif)' }}>
+                Acesso imediato e gratuito
+              </div>
+              <BotaoMatricular cursoId={cursoId} />
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,.4)', marginBottom: '4px' }}>
+                Acesso necessário
+              </div>
+              <div style={{ fontSize: '30px', fontWeight: 800, color: '#fff', marginBottom: '16px', fontFamily: 'var(--font-h, sans-serif)' }}>
+                R$ {Number(curso.price).toFixed(2).replace('.', ',')}
+              </div>
+              <BotaoCarrinho curso={{
+                id: cursoId,
+                title: curso.title,
+                price: String(curso.price),
+                thumbnailUrl: curso.thumbnailUrl ?? null,
+              }} />
+            </>
+          )}
         </div>
       )}
 

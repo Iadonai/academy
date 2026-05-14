@@ -46,7 +46,7 @@ export async function gerarConvite(formData: FormData): Promise<void> {
 
   const email = (formData.get('email') as string)?.trim() || null
 
-  const convite = await prisma.invite.create({
+  await prisma.invite.create({
     data: { senderId: user.id, email: email || undefined },
   })
 
@@ -58,4 +58,24 @@ export async function excluirConvite(formData: FormData) {
   const id = formData.get('id') as string
   await prisma.invite.delete({ where: { id } })
   revalidatePath('/admin/membros')
+}
+
+export async function liberarAcesso(formData: FormData) {
+  await verificarAdmin()
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
+  const cursoId = formData.get('cursoId') as string
+
+  if (!email || !cursoId) redirect('/admin/membros?erro=campos-obrigatorios')
+
+  const usuario = await prisma.user.findFirst({ where: { email } })
+  if (!usuario) redirect('/admin/membros?erro=usuario-nao-encontrado')
+
+  await prisma.courseAccess.upsert({
+    where: { userId_courseId: { userId: usuario.id, courseId: cursoId } },
+    create: { userId: usuario.id, courseId: cursoId, type: 'PURCHASE' },
+    update: {},
+  })
+
+  revalidatePath('/admin/membros')
+  redirect('/admin/membros?ok=acesso-liberado')
 }
