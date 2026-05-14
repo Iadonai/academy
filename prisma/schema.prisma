@@ -9,6 +9,7 @@ datasource db {
 
 enum Role {
   STUDENT
+  INSTRUCTOR
   ADMIN
 }
 
@@ -56,8 +57,9 @@ model User {
   posts            Post[]
   postReplies      PostReply[]
   postLikes        PostLike[]
-  invitesSent      Invite[]         @relation("InviteSender")
-  orders           Order[]
+  invitesSent       Invite[]         @relation("InviteSender")
+  orders            Order[]
+  instructorCourses Course[]         @relation("InstructorCourses")
 
   @@map("users")
 }
@@ -89,13 +91,16 @@ model Course {
   kiwifyProductId    String? @map("kiwify_product_id")
   kiwifyPlanId       String? @map("kiwify_plan_id")
   kiwifyCheckoutUrl  String? @map("kiwify_checkout_url")
+  instructorId       String? @map("instructor_id")
+  revenueShare       Decimal @default(0.50) @db.Decimal(3, 2) @map("revenue_share")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
-  modules       Module[]
+  modules        Module[]
   courseAccesses CourseAccess[]
   certificates   Certificate[]
   orderItems     OrderItem[]
+  instructor     User?          @relation("InstructorCourses", fields: [instructorId], references: [id])
 
   @@map("courses")
 }

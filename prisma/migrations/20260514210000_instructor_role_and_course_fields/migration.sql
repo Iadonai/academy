@@ -1,0 +1,10 @@
+ALTER TYPE "Role" ADD VALUE IF NOT EXISTS 'INSTRUCTOR';
+
+ALTER TABLE "courses"
+  ADD COLUMN IF NOT EXISTS "instructor_id" TEXT,
+  ADD COLUMN IF NOT EXISTS "revenue_share" DECIMAL(3,2) NOT NULL DEFAULT 0.50;
+
+ALTER TABLE "courses"
+  ADD CONSTRAINT "courses_instructor_id_fkey"
+  FOREIGN KEY ("instructor_id") REFERENCES "users"("id")
+  ON DELETE SET NULL ON UPDATE CASCADE;

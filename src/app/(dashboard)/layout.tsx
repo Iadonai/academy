@@ -26,6 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   })
 
   const isAdmin = perfil?.role === 'ADMIN'
+  const isInstrutor = perfil?.role === 'INSTRUCTOR' || perfil?.role === 'ADMIN'
   const primeiroNome = perfil?.name?.split(' ')[0] ?? user.email?.split('@')[0] ?? 'ALUNO'
   const iniciais = perfil?.name
     ? perfil.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()
@@ -97,6 +98,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <NavLink href="/trending">Trends</NavLink>
           <NavLink href="/stack">Stack</NavLink>
           <NavLink href="/ranking">Ranking</NavLink>
+          {isInstrutor && <NavLink href="/instrutor">Instrutor</NavLink>}
           {isAdmin && <NavLink href="/admin">Admin</NavLink>}
         </div>
 
