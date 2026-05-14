@@ -51,29 +51,40 @@ export async function POST(request: NextRequest) {
   })
 
   if (!assinatura.id) {
-    return NextResponse.json({ error: 'Erro ao criar assinatura' }, { status: 500 })
+    console.error('[assinatura] Asaas rejeitou criação:', JSON.stringify(assinatura))
+    return NextResponse.redirect(new URL('/dashboard?erro=assinatura', request.url))
   }
 
-  // Busca o link de pagamento da primeira cobrança da assinatura
+  // Busca o link de pagamento — tenta até 3x pois pode haver delay
   const BASE_URL = process.env.ASAAS_SANDBOX === 'true'
     ? 'https://sandbox.asaas.com/api/v3'
     : 'https://api.asaas.com/v3'
 
-  const cobrancasRes = await fetch(
-    `${BASE_URL}/subscriptions/${assinatura.id}/payments?limit=1`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'access_token': process.env.ASAAS_API_KEY!,
-      },
-    }
-  )
-  const cobrancasData = await cobrancasRes.json()
-  const primeiraCobranca = cobrancasData.data?.[0]
-
-  if (!primeiraCobranca?.invoiceUrl) {
-    return NextResponse.json({ error: 'Erro ao obter link de pagamento' }, { status: 500 })
+  const asaasHeaders = {
+    'Content-Type': 'application/json',
+    'access_token': process.env.ASAAS_API_KEY!,
   }
 
-  return NextResponse.redirect(primeiraCobranca.invoiceUrl)
+  let invoiceUrl: string | null = null
+
+  for (let tentativa = 0; tentativa < 3; tentativa++) {
+    if (tentativa > 0) await new Promise(r => setTimeout(r, 1000))
+
+    const cobrancasRes = await fetch(
+      `${BASE_URL}/subscriptions/${assinatura.id}/payments?limit=1`,
+      { headers: asaasHeaders }
+    )
+    const cobrancasData = await cobrancasRes.json()
+    console.log(`[assinatura] tentativa ${tentativa + 1} payments:`, JSON.stringify(cobrancasData))
+
+    invoiceUrl = cobrancasData.data?.[0]?.invoiceUrl ?? null
+    if (invoiceUrl) break
+  }
+
+  if (!invoiceUrl) {
+    console.error('[assinatura] invoiceUrl não encontrado para sub:', assinatura.id)
+    return NextResponse.redirect(new URL('/dashboard?erro=pagamento', request.url))
+  }
+
+  return NextResponse.redirect(invoiceUrl)
 }
