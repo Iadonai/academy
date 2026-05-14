@@ -15,6 +15,8 @@ export async function POST(
 
   const body = await request.json().catch(() => ({}))
   const cpfCnpj: string = (body.cpfCnpj ?? '').replace(/\D/g, '')
+  const fbp: string = body.fbp ?? ''
+  const fbc: string = body.fbc ?? ''
 
   if (!cpfCnpj || cpfCnpj.length < 11) {
     return NextResponse.json({ error: 'CPF obrigatório' }, { status: 400 })
@@ -57,8 +59,18 @@ export async function POST(
     },
   })
 
+  const order = await prisma.order.create({
+    data: {
+      userId: user.id,
+      total: curso.price,
+      fbp: fbp || null,
+      fbc: fbc || null,
+      items: { create: [{ courseId: cursoId, price: curso.price }] },
+    },
+  })
+
   const successUrl = new URL(`/dashboard?pagamento=ok`, request.url).toString()
-  const externalReference = buildRef('course', user.id, cursoId)
+  const externalReference = buildRef('order', user.id, order.id)
 
   const cobranca = await criarCobranca({
     customerId: cliente.id,

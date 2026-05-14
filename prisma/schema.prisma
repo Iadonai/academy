@@ -365,10 +365,12 @@ model PostAttachment {
 // ── Carrinho / Ordens ─────────────────────────────────────────────────────────
 
 model Order {
-  id        String  @id @default(uuid())
-  userId    String  @map("user_id")
-  status    String  @default("PENDING") // PENDING | PAID | CANCELLED
-  total     Decimal @db.Decimal(10, 2)
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  status    String   @default("PENDING") // PENDING | PAID | CANCELLED
+  total     Decimal  @db.Decimal(10, 2)
+  fbp       String?  @map("fbp")
+  fbc       String?  @map("fbc")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

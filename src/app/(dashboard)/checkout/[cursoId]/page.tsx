@@ -86,6 +86,10 @@ export default function CheckoutPage() {
   const total = totalSelecionados.reduce((acc, c) => acc + Number(c.price), 0)
   const qtd = totalSelecionados.length
 
+  function lerCookie(nome: string): string {
+    return document.cookie.split('; ').find(r => r.startsWith(nome + '='))?.split('=')[1] ?? ''
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const cpfLimpo = cpf.replace(/\D/g, '')
@@ -96,20 +100,21 @@ export default function CheckoutPage() {
     setLoading(true)
     setErro('')
 
+    const fbp = lerCookie('_fbp')
+    const fbc = lerCookie('_fbc')
+
     let res: Response
     if (extras.size === 0) {
-      // Só o curso principal — fluxo simples
       res = await fetch(`/api/checkout/${cursoId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cpfCnpj: cpfLimpo }),
+        body: JSON.stringify({ cpfCnpj: cpfLimpo, fbp, fbc }),
       })
     } else {
-      // Múltiplos cursos — usa o carrinho
       res = await fetch('/api/checkout/carrinho', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cpfCnpj: cpfLimpo, courseIds: [cursoId, ...Array.from(extras)] }),
+        body: JSON.stringify({ cpfCnpj: cpfLimpo, courseIds: [cursoId, ...Array.from(extras)], fbp, fbc }),
       })
     }
 

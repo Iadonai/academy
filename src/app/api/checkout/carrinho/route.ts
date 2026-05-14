@@ -11,6 +11,8 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}))
   const cpfCnpj: string = (body.cpfCnpj ?? '').replace(/\D/g, '')
   const courseIds: string[] = Array.isArray(body.courseIds) ? body.courseIds : []
+  const fbp: string = body.fbp ?? ''
+  const fbc: string = body.fbc ?? ''
 
   if (!cpfCnpj || cpfCnpj.length < 11) {
     return NextResponse.json({ error: 'CPF obrigatório' }, { status: 400 })
@@ -64,6 +66,8 @@ export async function POST(request: NextRequest) {
     data: {
       userId: user.id,
       total,
+      fbp: fbp || null,
+      fbc: fbc || null,
       items: {
         create: cursosPagos.map(c => ({ courseId: c.id, price: c.price })),
       },
