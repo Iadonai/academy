@@ -6,6 +6,7 @@ import { editarCurso } from '@/app/actions/admin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ThumbnailUpload } from './ThumbnailUpload'
 
 export default async function EditarCursoPage({ params }: { params: Promise<{ id: string }> }) {
   await verificarAdmin()
@@ -47,22 +48,8 @@ export default async function EditarCursoPage({ params }: { params: Promise<{ id
 
           {/* Thumbnail */}
           <div className="space-y-2">
-            <Label htmlFor="thumbnail">Thumbnail do curso</Label>
-            {curso.thumbnailUrl && (
-              <img
-                src={curso.thumbnailUrl}
-                alt="Thumbnail atual"
-                className="w-full h-36 object-cover rounded-md border border-slate-200"
-              />
-            )}
-            <input
-              id="thumbnail"
-              name="thumbnail"
-              type="file"
-              accept="image/*"
-              className="flex w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer"
-            />
-            <p className="text-xs text-slate-400">Recomendado: 1280×720px. JPG ou PNG.</p>
+            <Label>Thumbnail do curso</Label>
+            <ThumbnailUpload cursoId={curso.id} thumbnailUrl={curso.thumbnailUrl ?? null} />
           </div>
 
           <div className="space-y-1.5">

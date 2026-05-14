@@ -28,25 +28,7 @@ export async function editarCurso(formData: FormData) {
   await verificarAdmin()
 
   const id = formData.get('id') as string
-  const thumbnail = formData.get('thumbnail') as File | null
-
-  let thumbnailUrl: string | undefined
-
-  if (thumbnail && thumbnail.size > 0) {
-    const supabase = await createClient()
-
-    const ext = thumbnail.name.split('.').pop()
-    const caminho = `${id}/thumbnail.${ext}`
-
-    const { error } = await supabase.storage
-      .from('course-thumbnails')
-      .upload(caminho, thumbnail, { contentType: thumbnail.type, upsert: true })
-
-    if (!error) {
-      const { data } = supabase.storage.from('course-thumbnails').getPublicUrl(caminho)
-      thumbnailUrl = `${data.publicUrl}?t=${Date.now()}`
-    }
-  }
+  const thumbnailUrl = (formData.get('thumbnailUrl') as string) || undefined
 
   await prisma.course.update({
     where: { id },
