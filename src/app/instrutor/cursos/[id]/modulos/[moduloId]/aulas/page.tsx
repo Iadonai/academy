@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { AnexosAula } from './AnexosAula'
 
 async function adicionarAula(formData: FormData) {
   'use server'
@@ -70,6 +71,47 @@ async function excluirAula(formData: FormData) {
   revalidatePath(`/instrutor/cursos/${aula.module.courseId}/modulos`)
 }
 
+async function adicionarAnexo(formData: FormData) {
+  'use server'
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const aulaId = formData.get('aulaId') as string
+  const aula = await prisma.lesson.findUnique({
+    where: { id: aulaId },
+    select: { module: { select: { courseId: true, course: { select: { instructorId: true } } } } },
+  })
+  if (aula?.module.course.instructorId !== user.id) redirect('/instrutor/cursos')
+
+  await prisma.lessonAttachment.create({
+    data: {
+      lessonId: aulaId,
+      name: formData.get('name') as string,
+      url: formData.get('url') as string,
+      type: formData.get('type') as 'PDF' | 'LINK' | 'IMAGE' | 'FILE',
+    },
+  })
+  revalidatePath(`/instrutor/cursos/${aula.module.courseId}/modulos`)
+}
+
+async function excluirAnexo(formData: FormData) {
+  'use server'
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const id = formData.get('id') as string
+  const anexo = await prisma.lessonAttachment.findUnique({
+    where: { id },
+    select: { lesson: { select: { module: { select: { courseId: true, course: { select: { instructorId: true } } } } } } },
+  })
+  if (anexo?.lesson.module.course.instructorId !== user.id) redirect('/instrutor/cursos')
+
+  await prisma.lessonAttachment.delete({ where: { id } })
+  revalidatePath(`/instrutor/cursos/${anexo.lesson.module.courseId}/modulos`)
+}
+
 export default async function InstrutorAulasPage({
   params,
 }: {
@@ -84,7 +126,7 @@ export default async function InstrutorAulasPage({
     where: { id: moduloId },
     include: {
       course: { select: { id: true, title: true, instructorId: true } },
-      lessons: { orderBy: { order: 'asc' } },
+      lessons: { orderBy: { order: 'asc' }, include: { attachments: { orderBy: { createdAt: 'asc' } } } },
     },
   })
 
@@ -199,6 +241,13 @@ export default async function InstrutorAulasPage({
                   </button>
                 </div>
               </form>
+
+              <AnexosAula
+                aulaId={aula.id}
+                anexos={aula.attachments}
+                onAdd={adicionarAnexo}
+                onDelete={excluirAnexo}
+              />
 
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', justifyContent: 'flex-end' }}>
                 <form action={excluirAula}>
