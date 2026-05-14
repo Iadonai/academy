@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   const configValor = await prisma.platformConfig.findUnique({
     where: { key: 'asaas_subscription_price' },
   })
-  const valor = configValor ? parseFloat(configValor.value) : 197.00
+  const valor = configValor ? parseFloat(configValor.value) : 97.00
 
   const successUrl = new URL('/dashboard?acesso=ok', request.url).toString()
   // externalReference tipo 'subscription' → webhook cria Subscription ACTIVE → libera todos os cursos
