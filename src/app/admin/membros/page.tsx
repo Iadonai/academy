@@ -1,18 +1,13 @@
+import Link from 'next/link'
 import { verificarAdmin } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
-import { aprovarMembro, rejeitarMembro, banirMembro, reativarMembro, gerarConvite, excluirConvite, liberarAcesso } from '@/app/actions/membros'
+import { aprovarMembro, rejeitarMembro, banirMembro, reativarMembro, gerarConvite, excluirConvite } from '@/app/actions/membros'
 import { BotaoCopiar } from '@/components/admin/BotaoCopiar'
 
-export default async function AdminMembrosPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ ok?: string; erro?: string }>
-}) {
+export default async function AdminMembrosPage() {
   await verificarAdmin()
 
-  const { ok, erro } = await searchParams
-
-  const [membros, convites, cursos] = await Promise.all([
+  const [membros, convites] = await Promise.all([
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       select: { id: true, name: true, email: true, role: true, status: true, xpTotal: true, level: true, createdAt: true },
@@ -20,11 +15,6 @@ export default async function AdminMembrosPage({
     prisma.invite.findMany({
       orderBy: { createdAt: 'desc' },
       include: { sender: { select: { name: true } } },
-    }),
-    prisma.course.findMany({
-      where: { published: true },
-      orderBy: { title: 'asc' },
-      select: { id: true, title: true },
     }),
   ])
 
@@ -104,7 +94,7 @@ export default async function AdminMembrosPage({
               <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-sm font-bold text-slate-600 flex-shrink-0">
                 {m.name.slice(0, 2).toUpperCase()}
               </div>
-              <div className="flex-1 min-w-0">
+              <Link href={`/admin/membros/${m.id}`} className="flex-1 min-w-0 hover:opacity-70 transition-opacity">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-slate-900 truncate">{m.name}</span>
                   {m.role === 'ADMIN' && (
@@ -112,7 +102,7 @@ export default async function AdminMembrosPage({
                   )}
                 </div>
                 <div className="text-xs text-slate-400">{m.email}</div>
-              </div>
+              </Link>
               <div className="text-xs text-slate-500 text-right">
                 <div>Nível {m.level}</div>
                 <div>{m.xpTotal} XP</div>
@@ -159,55 +149,6 @@ export default async function AdminMembrosPage({
           </div>
         </div>
       )}
-
-      {/* Feedback liberação de acesso */}
-      {ok === 'acesso-liberado' && (
-        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-          ✅ Acesso liberado com sucesso.
-        </div>
-      )}
-      {erro === 'usuario-nao-encontrado' && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          ❌ Nenhum usuário encontrado com esse e-mail.
-        </div>
-      )}
-      {erro === 'campos-obrigatorios' && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          ❌ Preencha o e-mail e selecione um curso.
-        </div>
-      )}
-
-      {/* Liberar Acesso */}
-      <div>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Liberar Acesso a Curso</h2>
-        <div className="rounded-xl border border-slate-200 bg-white p-6">
-          <form action={liberarAcesso} className="flex flex-col sm:flex-row gap-3">
-            <input
-              name="email"
-              type="email"
-              required
-              placeholder="E-mail do aluno"
-              className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-            <select
-              name="cursoId"
-              required
-              className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
-            >
-              <option value="">Selecionar curso...</option>
-              {cursos.map((c) => (
-                <option key={c.id} value={c.id}>{c.title}</option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md whitespace-nowrap"
-            >
-              LIBERAR ACESSO
-            </button>
-          </form>
-        </div>
-      </div>
 
       {/* Convites */}
       <div>

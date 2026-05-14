@@ -60,22 +60,30 @@ export async function excluirConvite(formData: FormData) {
   revalidatePath('/admin/membros')
 }
 
-export async function liberarAcesso(formData: FormData) {
+export async function liberarAcessoPorId(formData: FormData) {
   await verificarAdmin()
-  const email = (formData.get('email') as string)?.trim().toLowerCase()
+  const userId = formData.get('userId') as string
   const cursoId = formData.get('cursoId') as string
-
-  if (!email || !cursoId) redirect('/admin/membros?erro=campos-obrigatorios')
-
-  const usuario = await prisma.user.findFirst({ where: { email } })
-  if (!usuario) redirect('/admin/membros?erro=usuario-nao-encontrado')
+  if (!userId || !cursoId) return
 
   await prisma.courseAccess.upsert({
-    where: { userId_courseId: { userId: usuario.id, courseId: cursoId } },
-    create: { userId: usuario.id, courseId: cursoId, type: 'PURCHASE' },
+    where: { userId_courseId: { userId, courseId: cursoId } },
+    create: { userId, courseId: cursoId, type: 'PURCHASE' },
     update: {},
   })
 
-  revalidatePath('/admin/membros')
-  redirect('/admin/membros?ok=acesso-liberado')
+  revalidatePath(`/admin/membros/${userId}`)
+}
+
+export async function revogarAcesso(formData: FormData) {
+  await verificarAdmin()
+  const userId = formData.get('userId') as string
+  const cursoId = formData.get('cursoId') as string
+  if (!userId || !cursoId) return
+
+  await prisma.courseAccess.deleteMany({
+    where: { userId, courseId: cursoId },
+  })
+
+  revalidatePath(`/admin/membros/${userId}`)
 }
