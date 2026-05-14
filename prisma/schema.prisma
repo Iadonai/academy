@@ -129,6 +129,7 @@ model Lesson {
   duration    String?
   description String?
   order       Int
+  isPreview   Boolean    @default(false) @map("is_preview")
   createdAt   DateTime   @default(now()) @map("created_at")
 
   module           Module              @relation(fields: [moduleId], references: [id], onDelete: Cascade)

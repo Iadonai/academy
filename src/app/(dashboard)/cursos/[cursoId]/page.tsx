@@ -197,11 +197,7 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
       )}
 
       {/* Módulos */}
-      <div style={{
-        display: 'flex', flexDirection: 'column', gap: '10px',
-        opacity: temAcesso ? 1 : 0.45,
-        pointerEvents: temAcesso ? 'auto' : 'none',
-      }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {curso.modules.map((modulo) => (
           <div key={modulo.id} style={{
             background: 'rgba(255,255,255,.03)',
@@ -224,7 +220,8 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
             <div>
               {modulo.lessons.map((aula, idx) => {
                 const concluida = aula.lessonProgresses.length > 0
-                return (
+                const aulaLiberada = temAcesso || aula.isPreview
+                return aulaLiberada ? (
                   <Link
                     key={aula.id}
                     href={`/cursos/${cursoId}/aulas/${aula.id}`}
@@ -261,10 +258,43 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
                       {aula.title}
                     </span>
 
+                    {aula.isPreview && !temAcesso && (
+                      <span style={{
+                        fontSize: '10px', fontFamily: 'var(--font-mono, monospace)',
+                        color: '#5bc8ff', background: 'rgba(91,200,255,.1)',
+                        border: '1px solid rgba(91,200,255,.25)',
+                        borderRadius: '20px', padding: '2px 8px', letterSpacing: '.06em',
+                      }}>PRÉVIA</span>
+                    )}
+
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 18l6-6-6-6" />
                     </svg>
                   </Link>
+                ) : (
+                  <div
+                    key={aula.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '14px',
+                      padding: '13px 20px', opacity: 0.35,
+                      borderBottom: idx < modulo.lessons.length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none',
+                    }}
+                  >
+                    <div style={{
+                      width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'rgba(255,255,255,.04)',
+                      border: '1.5px solid rgba(255,255,255,.1)',
+                    }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </div>
+                    <span style={{ fontSize: '13px', flex: 1, color: 'rgba(255,255,255,.4)' }}>
+                      {aula.title}
+                    </span>
+                  </div>
                 )
               })}
             </div>

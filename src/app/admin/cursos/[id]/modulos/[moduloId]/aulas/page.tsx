@@ -103,6 +103,12 @@ export default async function AulasPage({
             </div>
           </div>
 
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input type="hidden" name="isPreview" value="false" />
+            <input type="checkbox" name="isPreview" value="true" className="w-4 h-4 rounded accent-purple-600" />
+            <span className="text-sm text-slate-700 font-medium">Aula prévia gratuita <span className="text-slate-400 font-normal">(visível sem compra)</span></span>
+          </label>
+
           <Button type="submit">+ Adicionar atividade</Button>
         </form>
       </div>
@@ -182,6 +188,12 @@ export default async function AulasPage({
                       </div>
 
                       <Input name="description" defaultValue={aula.description ?? ''} className="h-8 text-sm" placeholder="Descrição (opcional)" />
+
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="hidden" name="isPreview" value="false" />
+                        <input type="checkbox" name="isPreview" value="true" defaultChecked={aula.isPreview} className="w-4 h-4 rounded accent-purple-600" />
+                        <span className="text-xs text-slate-600">Aula prévia gratuita</span>
+                      </label>
 
                       <Button type="submit" size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">💾 Salvar</Button>
                     </form>

@@ -131,6 +131,7 @@ export async function criarAula(formData: FormData) {
       contentUrl: lessonType !== 'VIDEO' ? (formData.get('contentUrl') as string) || null : null,
       duration: (formData.get('duration') as string) || null,
       description: (formData.get('description') as string) || null,
+      isPreview: formData.get('isPreview') === 'true',
       order: (ultima?.order ?? 0) + 1,
     },
   })
@@ -156,6 +157,7 @@ export async function editarAula(formData: FormData) {
       contentUrl: lessonType !== 'VIDEO' ? (formData.get('contentUrl') as string) || null : null,
       duration: (formData.get('duration') as string) || null,
       description: (formData.get('description') as string) || null,
+      isPreview: formData.get('isPreview') === 'true',
     },
   })
 

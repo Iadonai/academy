@@ -28,11 +28,11 @@ export default async function AulaPage({
   })
 
   if (perfil?.role !== 'ADMIN') {
-    const cursoDados = await prisma.course.findUnique({
-      where: { id: cursoId },
-      select: { price: true },
-    })
-    if (Number(cursoDados?.price) !== 0) {
+    const [cursoDados, aulaDados] = await Promise.all([
+      prisma.course.findUnique({ where: { id: cursoId }, select: { price: true } }),
+      prisma.lesson.findUnique({ where: { id: aulaId }, select: { isPreview: true } }),
+    ])
+    if (Number(cursoDados?.price) !== 0 && !aulaDados?.isPreview) {
       const acesso = await prisma.courseAccess.findFirst({
         where: { userId: user.id, courseId: cursoId },
       })
