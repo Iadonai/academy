@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logout } from '@/app/actions/auth'
 import { EventTracker } from '@/components/EventTracker'
+import { Ping } from '@/components/Ping'
 
 const TICKER_ITEMS = [
   'IADONAI ACADEMY // SISTEMA ONLINE',
@@ -129,6 +130,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       <Suspense fallback={null}>
         <EventTracker />
+        <Ping />
       </Suspense>
       <main>{children}</main>
     </div>

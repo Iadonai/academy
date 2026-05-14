@@ -41,6 +41,7 @@ model User {
   welcomeSentAt   DateTime?    @map("welcome_sent_at")
   cpfCnpj         String?      @map("cpf_cnpj")
   asaasCustomerId String?      @unique @map("asaas_customer_id")
+  lastSeenAt      DateTime?    @map("last_seen_at")
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @updatedAt @map("updated_at")
 

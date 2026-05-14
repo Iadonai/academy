@@ -32,19 +32,19 @@ export default async function ConfiguracoesPage() {
         <form action={salvarConfig} className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-700">
-              Valor da assinatura mensal (R$)
+              Valor do Acesso Completo (R$)
             </label>
             <input
               name="asaas_subscription_price"
               type="number"
               min="0"
               step="0.01"
-              defaultValue={configMap['asaas_subscription_price'] ?? '49.90'}
-              placeholder="Ex: 49.90"
+              defaultValue={configMap['asaas_subscription_price'] ?? '97.00'}
+              placeholder="Ex: 97.00"
               className="flex w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <p className="text-xs text-slate-400">
-              Valor cobrado mensalmente para acesso a todos os cursos da plataforma.
+              Preço do botão "Assinar agora" no dashboard — libera todos os cursos com pagamento único.
             </p>
           </div>
 

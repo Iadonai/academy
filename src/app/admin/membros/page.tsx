@@ -10,7 +10,7 @@ export default async function AdminMembrosPage() {
   const [membros, convites] = await Promise.all([
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
-      select: { id: true, name: true, email: true, role: true, status: true, xpTotal: true, level: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, status: true, xpTotal: true, level: true, createdAt: true, lastSeenAt: true },
     }),
     prisma.invite.findMany({
       orderBy: { createdAt: 'desc' },
@@ -18,9 +18,14 @@ export default async function AdminMembrosPage() {
     }),
   ])
 
+  const agora = Date.now()
+  const isOnline = (lastSeenAt: Date | null) =>
+    !!lastSeenAt && agora - new Date(lastSeenAt).getTime() < 5 * 60 * 1000
+
   const pendentes = membros.filter(m => m.status === 'PENDING')
   const ativos = membros.filter(m => m.status === 'ACTIVE')
   const banidos = membros.filter(m => m.status === 'BANNED')
+  const online = membros.filter(m => isOnline(m.lastSeenAt)).length
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
@@ -29,9 +34,10 @@ export default async function AdminMembrosPage() {
       <h1 className="text-2xl font-bold text-slate-900">Gerenciar Membros</h1>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         {[
-          { label: 'Ativos', count: ativos.length, cor: 'text-green-600' },
+          { label: 'Online agora', count: online, cor: 'text-green-500' },
+          { label: 'Ativos', count: ativos.length, cor: 'text-slate-700' },
           { label: 'Pendentes', count: pendentes.length, cor: 'text-yellow-600' },
           { label: 'Banidos', count: banidos.length, cor: 'text-red-600' },
         ].map(({ label, count, cor }) => (
@@ -91,8 +97,13 @@ export default async function AdminMembrosPage() {
             <p className="p-4 text-sm text-slate-400">Nenhum membro ativo.</p>
           ) : ativos.map((m, i) => (
             <div key={m.id} className={`flex items-center gap-4 p-4 ${i < ativos.length - 1 ? 'border-b border-slate-100' : ''}`}>
-              <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-sm font-bold text-slate-600 flex-shrink-0">
-                {m.name.slice(0, 2).toUpperCase()}
+              <div className="relative flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-sm font-bold text-slate-600">
+                  {m.name.slice(0, 2).toUpperCase()}
+                </div>
+                {isOnline(m.lastSeenAt) && (
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-white rounded-full" />
+                )}
               </div>
               <Link href={`/admin/membros/${m.id}`} className="flex-1 min-w-0 hover:opacity-70 transition-opacity">
                 <div className="flex items-center gap-2">
