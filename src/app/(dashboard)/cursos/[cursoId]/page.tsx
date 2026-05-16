@@ -123,7 +123,7 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
         }}>{curso.title}</h1>
 
         {curso.description && (
-          <p style={{ color: 'rgba(255,255,255,.45)', fontSize: '13px', lineHeight: 1.7, marginBottom: '20px' }}>
+          <p style={{ color: 'rgba(255,255,255,.45)', fontSize: '13px', lineHeight: 1.7, marginBottom: '20px', whiteSpace: 'pre-wrap' }}>
             {curso.description}
           </p>
         )}
