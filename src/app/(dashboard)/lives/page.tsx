@@ -73,7 +73,7 @@ export default async function LivesPage() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: lives.length > 0 ? '1fr 300px' : '1fr', gap: '20px' }}>
+      <div className={lives.length > 0 ? 'page-main-sidebar-300' : undefined}>
         <div>
           {/* Próximas lives */}
           {proximas.length > 0 && (

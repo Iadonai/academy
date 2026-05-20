@@ -45,7 +45,7 @@ export default async function RankingPage({
             HALL DA FAMA
           </div>
           <div style={{ fontSize: '13px', color: 'var(--mt)' }}>{ranking.length} {ranking.length === 1 ? 'membro' : 'membros'} na plataforma</div>
-          <div style={{ display: 'flex', gap: '20px', marginTop: '12px' }}>
+          <div className="hero-stats">
             <div>
               <div className="silver" style={{ fontFamily: 'var(--font-h)', fontSize: '22px' }}>{meusStats?.xpTotal ?? 0}</div>
               <div style={{ fontFamily: 'var(--font-m)', fontSize: '10px', color: 'var(--mt)', letterSpacing: '.08em' }}>// MEU XP</div>

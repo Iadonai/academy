@@ -42,7 +42,7 @@ export default async function CanalPage({
 
   return (
     <div style={{ padding: '16px 20px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '16px' }}>
+      <div className="page-main-sidebar">
         {/* Feed */}
         <div>
           {/* Tags de canais */}

@@ -46,7 +46,7 @@ export default async function ComunidadePage() {
           <div style={{ fontSize: '13px', color: 'var(--mt)', letterSpacing: '.02em' }}>
             Comunidade IADONAI Academy
           </div>
-          <div style={{ display: 'flex', gap: '20px', marginTop: '12px' }}>
+          <div className="hero-stats">
             {[
               { v: perfil?.xpTotal ?? 0, l: '// XP TOTAL' },
               { v: perfil?.level ?? 1, l: '// NÍVEL' },
@@ -62,7 +62,7 @@ export default async function ComunidadePage() {
         <div className="hero-hex">IA</div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '16px' }}>
+      <div className="page-main-sidebar">
         {/* Feed */}
         <div>
           {/* Canais como tags */}

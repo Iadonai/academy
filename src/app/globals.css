@@ -618,6 +618,33 @@ body {
   .nav-hamburger { display: flex; }
 }
 
+/* ── Page layout helpers ─────────────────────────────────────────────── */
+.page-main-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 16px;
+}
+.page-main-sidebar-300 {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+.hero-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .page-main-sidebar     { grid-template-columns: 1fr; }
+  .page-main-sidebar-300 { grid-template-columns: 1fr; }
+  .hero-stats            { gap: 14px; margin-top: 10px; }
+  .hero-banner           { flex-wrap: wrap; gap: 12px; }
+  /* padding global das páginas */
+  div[style*="padding: '16px 20px'"] { padding: 12px 14px !important; }
+}
+
 /* ── Aula page layout ────────────────────────────────────────────────── */
 .aula-layout {
   display: flex;

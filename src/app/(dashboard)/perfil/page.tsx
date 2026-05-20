@@ -106,7 +106,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
+        <div className="hero-stats">
           {[
             { v: perfil.xpTotal, l: '// XP TOTAL' },
             { v: perfil.level, l: '// NÍVEL' },
