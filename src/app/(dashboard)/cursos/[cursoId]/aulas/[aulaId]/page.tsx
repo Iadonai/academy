@@ -7,6 +7,7 @@ import { BotaoConcluida } from '@/components/aula/BotaoConcluida'
 import { Comentarios } from '@/components/aula/Comentarios'
 import { NotasPessoais } from '@/components/aula/NotasPessoais'
 import { PomodoroWidget } from '@/components/aula/PomodoroWidget'
+import { AulaSidebar } from '@/components/aula/AulaSidebar'
 
 const ICON: Record<string, string> = { VIDEO: '▶', PDF: '📄', QUIZ: '✏️' }
 const LABEL: Record<string, string> = { VIDEO: 'Vídeo', PDF: 'Leitura', QUIZ: 'Quiz' }
@@ -95,11 +96,11 @@ export default async function AulaPage({
   const progresso = totalAulas > 0 ? Math.round((totalConcluidas / totalAulas) * 100) : 0
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#1a1a2e', color: '#e2e8f0', fontFamily: 'system-ui, sans-serif', overflow: 'hidden' }}>
+    <div className="aula-layout" style={{ fontFamily: 'system-ui, sans-serif' }}>
       <PomodoroWidget lessonId={aulaId} />
 
       {/* ── SIDEBAR ESQUERDA ── */}
-      <aside style={{ width: 320, minWidth: 320, background: '#0f0f1a', borderRight: '1px solid rgba(255,255,255,.07)', display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto' }}>
+      <AulaSidebar>
         {/* Cabeçalho sidebar */}
         <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
           <Link href={`/cursos/${cursoId}`} style={{ fontSize: 11, color: '#7c8ca0', textDecoration: 'none', letterSpacing: '.06em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
@@ -171,10 +172,10 @@ export default async function AulaPage({
             </div>
           ))}
         </div>
-      </aside>
+      </AulaSidebar>
 
       {/* ── ÁREA PRINCIPAL ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <div className="aula-main">
 
         {/* Header fixo */}
         <header style={{ height: 52, background: '#0f0f1a', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', flexShrink: 0 }}>
