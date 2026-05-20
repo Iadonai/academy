@@ -18,6 +18,19 @@ export async function marcarConcluida(formData: FormData) {
   const lessonId = formData.get('lessonId') as string
   const cursoId = formData.get('cursoId') as string
 
+  // Verificar acesso ao curso antes de registrar progresso
+  const [curso, perfil] = await Promise.all([
+    prisma.course.findUnique({ where: { id: cursoId }, select: { price: true } }),
+    prisma.user.findUnique({ where: { id: user.id }, select: { role: true } }),
+  ])
+  if (Number(curso?.price) !== 0 && perfil?.role !== 'ADMIN') {
+    const [acesso, assinatura] = await Promise.all([
+      prisma.courseAccess.findFirst({ where: { userId: user.id, courseId: cursoId } }),
+      prisma.subscription.findFirst({ where: { userId: user.id, status: 'ACTIVE' } }),
+    ])
+    if (!acesso && !assinatura) throw new Error('Acesso negado')
+  }
+
   await prisma.lessonProgress.upsert({
     where: { userId_lessonId: { userId: user.id, lessonId } },
     create: { userId: user.id, lessonId },

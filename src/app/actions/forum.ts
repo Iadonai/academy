@@ -56,7 +56,21 @@ export async function criarPost(formData: FormData) {
   if (arquivosValidos.length > 0) {
     const supabase = await createClient()
 
+    const MIME_PERMITIDOS = new Set([
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+      'application/pdf',
+    ])
+    const TAMANHO_MAX = 10 * 1024 * 1024 // 10 MB
+
     for (const file of arquivosValidos) {
+      if (!MIME_PERMITIDOS.has(file.type)) {
+        console.warn('[forum] tipo rejeitado:', file.type)
+        continue
+      }
+      if (file.size > TAMANHO_MAX) {
+        console.warn('[forum] arquivo muito grande:', file.size)
+        continue
+      }
       const ext = file.name.split('.').pop()
       const caminho = `${post.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 

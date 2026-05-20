@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
+
+function tokenIgual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  try { return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b)) } catch { return false }
+}
 
 // Eventos que indicam pagamento aprovado
 const EVENTOS_APROVADOS = ['order_approved', 'subscription_active']
@@ -9,10 +15,13 @@ const EVENTOS_CANCELADOS = ['order_refunded', 'subscription_cancelled', 'subscri
 export async function POST(req: NextRequest) {
   try {
     // Validar token da Kiwify
-    const token = req.nextUrl.searchParams.get('token')
     const tokenEsperado = process.env.KIWIFY_WEBHOOK_TOKEN
-
-    if (tokenEsperado && token !== tokenEsperado) {
+    if (!tokenEsperado) {
+      console.error('[kiwify] KIWIFY_WEBHOOK_TOKEN não configurado')
+      return NextResponse.json({ error: 'Serviço não configurado' }, { status: 503 })
+    }
+    const token = req.nextUrl.searchParams.get('token') ?? ''
+    if (!tokenIgual(token, tokenEsperado)) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
     }
 
@@ -36,16 +45,13 @@ const evento = body.webhook_event_type as string
       let usuario = await prisma.user.findUnique({ where: { email } })
 
       if (!usuario) {
-        // Gera senha aleatória
-        const senha = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8)
-
-        // Cria no Supabase Auth
+        // Cria no Supabase Auth com senha descartável (nunca armazenada)
         const { createAdminClient } = await import('@/lib/supabase/admin')
         const adminSupabase = await createAdminClient()
 
         const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
           email,
-          password: senha,
+          password: crypto.randomBytes(32).toString('hex'),
           email_confirm: true,
         })
 
@@ -63,11 +69,17 @@ const evento = body.webhook_event_type as string
           },
         })
 
-        // Salva senha temporária para enviar por email/WhatsApp
+        // Gera link de acesso (recovery) para o usuário definir a própria senha
+        const { data: linkData } = await adminSupabase.auth.admin.generateLink({
+          type: 'recovery',
+          email,
+        })
+        const setupLink = linkData?.properties?.action_link ?? ''
+
         await prisma.platformConfig.upsert({
           where: { key: `temp_password_${usuario.id}` },
-          create: { key: `temp_password_${usuario.id}`, value: senha },
-          update: { value: senha },
+          create: { key: `temp_password_${usuario.id}`, value: setupLink },
+          update: { value: setupLink },
         })
 
         console.log(`[kiwify] usuário criado: ${email}`)

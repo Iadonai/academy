@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { parseRef } from '@/lib/asaas'
+
+function tokenIgual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  try { return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b)) } catch { return false }
+}
 
 const N8N_BASE = 'https://n8n.iadonaiacademy.com.br/webhook'
 
@@ -24,15 +30,16 @@ const EVENTOS_CANCELADOS = new Set(['PAYMENT_OVERDUE', 'SUBSCRIPTION_DELETED'])
 
 export async function POST(request: NextRequest) {
   const token = process.env.ASAAS_WEBHOOK_TOKEN
-  if (token) {
-    // Asaas envia o token no header 'access_token'
-    const headerToken =
-      request.headers.get('access_token') ??
-      request.headers.get('asaas-access-token')
-    if (headerToken !== token) {
-      console.warn('[asaas webhook] token inválido:', headerToken)
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  if (!token) {
+    console.error('[asaas webhook] ASAAS_WEBHOOK_TOKEN não configurado')
+    return NextResponse.json({ error: 'Serviço não configurado' }, { status: 503 })
+  }
+  const headerToken =
+    request.headers.get('access_token') ??
+    request.headers.get('asaas-access-token') ?? ''
+  if (!tokenIgual(headerToken, token)) {
+    console.warn('[asaas webhook] token inválido')
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   let body: Record<string, unknown>
@@ -61,7 +68,7 @@ export async function POST(request: NextRequest) {
         where: { id: ref.orderId },
         include: { items: true },
       })
-      if (order) {
+      if (order && order.userId === ref.userId) {
         for (const item of order.items) {
           await prisma.courseAccess.upsert({
             where: { userId_courseId: { userId: ref.userId, courseId: item.courseId } },

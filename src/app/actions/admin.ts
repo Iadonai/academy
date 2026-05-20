@@ -252,12 +252,18 @@ export async function excluirAnexo(formData: FormData) {
 
 // ── Configurações ─────────────────────────────────────────────────────────────
 
+const CONFIG_KEYS_PERMITIDAS = new Set([
+  'asaas_subscription_price',
+  'kiwify_subscription_product_id',
+])
+
 export async function salvarConfig(formData: FormData) {
   await verificarAdmin()
 
   const entries = Array.from(formData.entries()) as [string, string][]
 
   for (const [key, value] of entries) {
+    if (!CONFIG_KEYS_PERMITIDAS.has(key)) continue
     await prisma.platformConfig.upsert({
       where: { key },
       create: { key, value },

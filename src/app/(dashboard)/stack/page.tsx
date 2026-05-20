@@ -44,6 +44,17 @@ function formatNum(n: number) {
   return String(n)
 }
 
+function decodeEntidades(str: string): string {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, '/')
+}
+
 function tempoAtras(unix: number) {
   const diff = Math.floor((Date.now() / 1000) - unix)
   if (diff < 3600) return `${Math.floor(diff / 60)}min`
@@ -128,9 +139,9 @@ export default async function StackPage() {
 
                     {/* Conteúdo */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', color: 'var(--tx)', lineHeight: 1.4, marginBottom: '8px' }}
-                        dangerouslySetInnerHTML={{ __html: q.title }}
-                      />
+                      <div style={{ fontFamily: 'var(--font-b)', fontWeight: 700, fontSize: '13px', color: 'var(--tx)', lineHeight: 1.4, marginBottom: '8px' }}>
+                        {decodeEntidades(q.title)}
+                      </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         {q.tags.slice(0, 4).map((t) => (
                           <span key={t} style={{ fontFamily: 'var(--font-m)', fontSize: '8px', padding: '1px 6px', border: '1px solid var(--bdr)', color: 'var(--mt)' }}>{t}</span>
