@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -6,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { logout } from '@/app/actions/auth'
 import { EventTracker } from '@/components/EventTracker'
 import { Ping } from '@/components/Ping'
+import { TopNav } from '@/components/TopNav'
 
 const TICKER_ITEMS = [
   'IADONAI ACADEMY // SISTEMA ONLINE',
@@ -45,6 +45,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
     return aulas.length > 0 && aulas.every(a => concluidosSet.has(a.id))
   }).length
 
+  const links = [
+    { href: '/comunidade', label: 'Comunidade', pip: true },
+    { href: '/dashboard', label: 'Classroom' },
+    { href: '/lives', label: 'Lives' },
+    { href: '/noticias', label: 'Notícias' },
+    { href: '/vagas', label: 'Vagas' },
+    { href: '/trending', label: 'Trends' },
+    { href: '/stack', label: 'Stack' },
+    { href: '/ranking', label: 'Ranking' },
+    ...(isInstrutor ? [{ href: '/instrutor', label: 'Instrutor' }] : []),
+    ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
+  ]
+
   const tickerContent = [...TICKER_ITEMS, ...TICKER_ITEMS]
 
   return (
@@ -67,68 +80,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </div>
 
-      {/* Top nav */}
-      <nav className="topnav">
-        <Link href="/dashboard" className="brand">
-          IAD<span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '18px',
-            height: '18px',
-            border: '2px solid var(--cy)',
-            borderRadius: '50%',
-            fontSize: '9px',
-            color: 'var(--cy)',
-            marginInline: '1px',
-            verticalAlign: 'middle',
-            boxShadow: '0 0 8px var(--cy)',
-            fontFamily: 'var(--font-h)',
-          }}>◎</span>NAI
-        </Link>
-
-        <div style={{ display: 'flex', flex: 1 }}>
-          <NavLink href="/comunidade">
-            Comunidade <span className="tab-pip" />
-          </NavLink>
-          <NavLink href="/dashboard">Classroom</NavLink>
-          <NavLink href="/lives">Lives</NavLink>
-          <NavLink href="/noticias">Notícias</NavLink>
-          <NavLink href="/vagas">Vagas</NavLink>
-          <NavLink href="/trending">Trends</NavLink>
-          <NavLink href="/stack">Stack</NavLink>
-          <NavLink href="/ranking">Ranking</NavLink>
-          {isInstrutor && <NavLink href="/instrutor">Instrutor</NavLink>}
-          {isAdmin && <NavLink href="/admin">Admin</NavLink>}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: 'auto' }}>
-          {/* Stats do usuário */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontFamily: 'var(--font-h)', fontSize: 11, color: 'var(--cy)', letterSpacing: '.08em', fontWeight: 700 }}>
-              {primeiroNome.toUpperCase()}
-            </span>
-            <span style={{ width: 1, height: 14, background: 'var(--bdr)', display: 'inline-block' }} />
-            {[
-              { v: perfil?.xpTotal ?? 0, l: 'XP' },
-              { v: perfil?.level ?? 1, l: 'NV' },
-              { v: concluidos, l: '✓' },
-            ].map(s => (
-              <span key={s.l} style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                <span className="xp-chip" style={{ letterSpacing: '.04em' }}>{s.v}</span>
-                <span style={{ fontFamily: 'var(--font-m)', fontSize: 9, color: 'var(--mt)', letterSpacing: '.06em' }}>{s.l}</span>
-              </span>
-            ))}
-          </div>
-
-          <form action={logout} style={{ margin: 0 }}>
-            <button type="submit" className="btn-ghost" style={{ padding: '4px 10px', fontSize: '11px' }}>
-              SAIR
-            </button>
-          </form>
-          <Link href="/perfil" className="hex-av" style={{ textDecoration: 'none' }}>{iniciais}</Link>
-        </div>
-      </nav>
+      <TopNav
+        links={links}
+        primeiroNome={primeiroNome}
+        iniciais={iniciais}
+        xpTotal={perfil?.xpTotal ?? 0}
+        level={perfil?.level ?? 1}
+        concluidos={concluidos}
+        logout={logout}
+      />
 
       <Suspense fallback={null}>
         <EventTracker />
@@ -136,13 +96,5 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </Suspense>
       <main>{children}</main>
     </div>
-  )
-}
-
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link href={href} className="nav-tab">
-      {children}
-    </Link>
   )
 }

@@ -511,3 +511,109 @@ body {
 @media (min-width: 768px) {
   .auth-left { display: block !important; }
 }
+
+/* ── Mobile nav ──────────────────────────────────────────────────────── */
+.topnav-links {
+  display: flex;
+  flex: 1;
+}
+.topnav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--bdr);
+  cursor: pointer;
+  padding: 6px 8px;
+  width: 36px;
+  height: 36px;
+}
+.nav-hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--cy);
+}
+.nav-mobile-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(6,4,15,.75);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+}
+.nav-mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(280px, 85vw);
+  background: var(--s2);
+  border-left: 1px solid var(--bdr);
+  display: flex;
+  flex-direction: column;
+  z-index: 201;
+  overflow: hidden;
+}
+.nav-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--bdr);
+  min-height: 54px;
+  background: var(--s1);
+}
+.nav-mobile-close {
+  background: none;
+  border: none;
+  color: var(--mt);
+  font-family: var(--font-m);
+  font-size: 10px;
+  cursor: pointer;
+  letter-spacing: .08em;
+  padding: 4px 8px;
+  border: 1px solid var(--bdr);
+  transition: color .15s, border-color .15s;
+}
+.nav-mobile-close:hover { color: var(--cy); border-color: var(--cy) }
+.nav-mobile-links {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+}
+.nav-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  font-family: var(--font-b);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mt);
+  text-decoration: none;
+  border-bottom: 1px solid var(--bdr);
+  transition: color .15s, background .15s, padding-left .15s;
+}
+.nav-mobile-link:hover {
+  color: var(--cy);
+  background: rgba(155,111,255,.05);
+  padding-left: 26px;
+}
+
+@media (max-width: 768px) {
+  .topnav-links { display: none; }
+  .topnav-right  { display: none; }
+  .nav-hamburger { display: flex; }
+}
